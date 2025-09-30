@@ -3,26 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DarkLeaks</title> <!-- This is the browser tab name -->
+  <title>DarkLeaks</title>
   <style>
-    /* Make the page black and center the text */
     body {
-      background-color: white;
-      color: black;
+      background-color: black;
+      color: white;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh; /* full screen */
-      font-family: Impact, Charcoal, sans-serif;
+      height: 100vh;
       margin: 0;
+      font-family: Impact, Charcoal, sans-serif;
     }
-
-    /* Fade in and fade out animation for the title */
     h1 {
-      font-size: 4rem;
+      font-size: 5rem;
       animation: fadeInOut 4s ease-in-out;
     }
-
     @keyframes fadeInOut {
       0% {opacity: 0;}
       50% {opacity: 1;}
@@ -32,6 +28,13 @@
 </head>
 <body>
   <h1>DarkLeaks</h1>
+
+  <script>
+    // Redirect after 4 seconds
+    setTimeout(function() {
+      window.location.href = "main.html";
+    }, 4000);
+  </script>
 </body>
 </html>
 
