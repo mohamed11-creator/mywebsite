@@ -33,13 +33,10 @@
   <h1>DarKLeaks</h1>
 
   <script>
-    // Redirect only once per visitor
-    if (!localStorage.getItem('visitedSplash')) {
-      localStorage.setItem('visitedSplash', 'true');
-      setTimeout(function() {
-        window.location.href = "main.html"; // redirect to gallery page
-      }, 4000); // matches fade duration
-    }
+    // Always redirect after 4 seconds
+    setTimeout(function() {
+      window.location.href = "main.html"; // redirect to gallery page
+    }, 4000);
   </script>
 </body>
 </html>
