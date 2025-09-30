@@ -47,7 +47,7 @@
   <h1>DarKLeaks Gallery</h1>
 
   <div class="gallery">
-    <!-- Example for 10 images -->
+    <!-- 10 images ready -->
     <div class="item">
       <img src="image1.jpg" alt="Image 1">
       <a href="https://example.com" target="_blank">Visit link</a>
@@ -89,5 +89,14 @@
       <a href="https://example.com" target="_blank">Visit link</a>
     </div>
   </div>
+
+  <script>
+    // Always go back to splash if opened directly
+    if (window.location.pathname.endsWith('main.html')) {
+      setTimeout(function() {
+        window.location.href = "index.html";
+      }, 100); // tiny delay to ensure page loads
+    }
+  </script>
 </body>
 </html>
