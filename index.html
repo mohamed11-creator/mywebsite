@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DarkLeaks</title>
+  <title>Reversed-Leaks</title>
   <style>
     body {
       background-color: white;
@@ -14,11 +14,14 @@
       height: 100vh;
       margin: 0;
       font-family: Impact, Charcoal, sans-serif;
+      text-align: center;
     }
+
     h1 {
       font-size: 5rem;
       animation: fadeInOut 4s ease-in-out;
     }
+
     @keyframes fadeInOut {
       0% {opacity: 0;}
       50% {opacity: 1;}
@@ -27,14 +30,16 @@
   </style>
 </head>
 <body>
-  <h1>DarkLeaks</h1>
+  <h1>Reversed-Leaks</h1>
 
   <script>
-    // Redirect after 4 seconds
-    setTimeout(function() {
-      window.location.href = "main.html";
-    }, 4000);
+    // Redirect only once per visitor
+    if (!localStorage.getItem('visitedSplash')) {
+      localStorage.setItem('visitedSplash', 'true');
+      setTimeout(function() {
+        window.location.href = "main.html"; // redirect to gallery page
+      }, 4000); // matches fade duration
+    }
   </script>
 </body>
 </html>
-
