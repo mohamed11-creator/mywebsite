@@ -14,7 +14,7 @@
       color: black;
     }
 
-    /* Splash page styling */
+    /* Splash Page Styling */
     #splash {
       display: flex;
       justify-content: center;
@@ -24,8 +24,10 @@
     }
 
     #splash h1 {
-      font-size: 5rem;
+      font-size: 10vw; /* scales with screen width */
       animation: fadeInOut 4s ease-in-out;
+      margin: 0;
+      padding: 0;
     }
 
     @keyframes fadeInOut {
@@ -34,7 +36,7 @@
       100% {opacity: 0;}
     }
 
-    /* Gallery page styling */
+    /* Gallery Page Styling */
     #gallery {
       display: none; /* hidden initially */
       padding: 20px;
@@ -74,10 +76,17 @@
       text-decoration: underline;
     }
 
-    /* Upload button styling */
+    /* Upload Button Styling */
     .upload-btn {
       margin-top: 5px;
       display: block;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      .gallery-container .item {
+        width: 45%;
+      }
     }
   </style>
 </head>
@@ -92,52 +101,22 @@
   <div id="gallery">
     <h1>BusinessLinks Gallery</h1>
     <div class="gallery-container">
-      <!-- 10 placeholder images -->
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 1" id="img1">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 2" id="img2">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 3" id="img3">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 4" id="img4">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 5" id="img5">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 6" id="img6">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 7" id="img7">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 8" id="img8">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 9" id="img9">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
-      <div class="item">
-        <img src="https://via.placeholder.com/200" alt="Image 10" id="img10">
-        <a href="https://example.com" target="_blank">Visit link</a>
-      </div>
+      <!-- 24 placeholder images -->
+      <script>
+        for(let i=1; i<=24; i++){
+          document.write(`
+            <div class="item">
+              <img src="https://via.placeholder.com/200" alt="Image ${i}" id="img${i}">
+              <a href="https://example.com" target="_blank">Visit link</a>
+            </div>
+          `);
+        }
+      </script>
     </div>
   </div>
 
   <script>
-    // Splash → gallery transition after 4 seconds
+    // Splash → Gallery transition after 4 seconds
     setTimeout(function() {
       document.getElementById('splash').style.display = 'none';
       document.getElementById('gallery').style.display = 'block';
