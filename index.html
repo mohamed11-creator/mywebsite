@@ -27,18 +27,19 @@ body { margin:0; font-family:'Impact', Charcoal, sans-serif; background:white; c
   display:flex;
 }
 .item {
-  width:90%; max-width:200px;
+  width:180px;
   text-align:center;
   border-radius:12px;
   padding:10px;
   background:#f5f5f5;
   border:1px solid #ddd;
   transition:transform 0.3s, box-shadow 0.3s;
+  flex: 0 0 auto;
 }
 .item:hover { transform:scale(1.05); box-shadow:0 6px 20px rgba(0,0,0,0.25); }
 .item img {
   width:100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 9/16;
   border-radius:10px;
   border:2px solid #333;
   object-fit:cover;
@@ -60,7 +61,7 @@ button.upload-btn:hover { background:#0056b3; }
 
 @media(max-width:600px){ 
   #splash{font-size:2em;} 
-  .item{max-width:90%;} 
+  .item{width:45%; max-width:200px;}
   button.upload-btn{width:80%;}
 }
 </style>
@@ -77,6 +78,10 @@ const uploadPreset = 'zrx3ywf6'; // your unsigned preset
 const folder = 'businesslinks_gallery';
 const totalSlots = 24;
 
+// Example array to store uploaded images URLs (replace with your Cloudinary URLs for permanent gallery)
+let imagesURLs = new Array(totalSlots).fill('https://via.placeholder.com/200x356?text=Empty+Slot');
+let links = new Array(totalSlots).fill('#');
+
 const gallery = document.getElementById('gallery');
 
 // Splash animation ends → show gallery
@@ -84,26 +89,30 @@ const splash = document.getElementById('splash');
 splash.addEventListener('animationend', () => {
     splash.style.display = 'none';
     gallery.style.display = 'flex';
-    loadGallery();
+    renderGallery();
 });
 
-// Create gallery slots
-for(let i=0;i<totalSlots;i++){
-  const div = document.createElement('div');
-  div.className = 'item';
-  div.innerHTML = `
-    <img id="slot${i+1}" src="https://via.placeholder.com/200x356?text=Empty+Slot" alt="Image ${i+1}">
-    <button class="upload-btn" onclick="uploadToCloud(${i+1})">Upload Image</button>
-    <input class="link-input" id="link${i+1}" placeholder="Enter link" oninput="updateLink(${i+1})">
-    <a id="a${i+1}" href="#" target="_blank">Visit Link ${i+1}</a>
-  `;
-  gallery.appendChild(div);
+// Create gallery slots dynamically
+function renderGallery(){
+  gallery.innerHTML = '';
+  for(let i=0;i<totalSlots;i++){
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `
+      <img id="slot${i+1}" src="${imagesURLs[i]}" alt="Image ${i+1}">
+      <button class="upload-btn" onclick="uploadToCloud(${i+1})">Upload Image</button>
+      <input class="link-input" id="link${i+1}" placeholder="Enter link" value="${links[i]}" oninput="updateLink(${i+1})">
+      <a id="a${i+1}" href="${links[i]}" target="_blank">Visit Link ${i+1}</a>
+    `;
+    gallery.appendChild(div);
+  }
 }
 
 // Update link under image
 function updateLink(i){
   const url = document.getElementById('link'+i).value;
   document.getElementById('a'+i).href = url;
+  links[i] = url; // save permanently in this session
 }
 
 // Upload image to Cloudinary
@@ -124,25 +133,14 @@ async function uploadToCloud(slot){
         body: formData
       });
       const data = await res.json();
+      imagesURLs[slot-1] = data.secure_url; // save URL permanently for this session
       document.getElementById('slot'+slot).src = data.secure_url;
-      alert('Image uploaded successfully! Refresh will keep it visible for everyone.');
+      alert('Image uploaded! Visible to all after adding to imagesURLs.');
     } catch(e){
       alert('Upload failed: '+e.message);
     }
   };
   fileInput.click();
-}
-
-// Load all images from Cloudinary folder
-async function loadGallery(){
-  try {
-    // Frontend-only solution: Cloudinary requires signed URL for full listing
-    // Instead, you must manually add public URLs of uploaded images to an array if unsigned listing not possible
-    // For demonstration, we’ll just show what’s uploaded in this session
-    console.log('Gallery loaded. Images are shown after upload.');
-  } catch(e){
-    console.log('Gallery load failed:', e.message);
-  }
 }
 </script>
 
