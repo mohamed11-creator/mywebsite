@@ -6,35 +6,24 @@
   <title>DarKLeaks</title>
   <style>
     body {
-      background-color: white;
-      color: black;
- HEAD
-      font-family: Impact, Charcoal, sans-serif;
       margin: 0;
       padding: 0;
       text-align: center;
+      font-family: Impact, Charcoal, sans-serif;
+      background-color: white;
+      color: black;
     }
 
     /* Splash page styling */
     #splash {
-=======
-9a037fb1010150fa67169155f2c8c642f664ce09
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-<<<<<<< HEAD
+      width: 100vw;
     }
 
     #splash h1 {
-=======
-      margin: 0;
-      font-family: Impact, Charcoal, sans-serif;
-      text-align: center;
-    }
-
-    h1 {
->>>>>>> 9a037fb1010150fa67169155f2c8c642f664ce09
       font-size: 5rem;
       animation: fadeInOut 4s ease-in-out;
     }
@@ -44,7 +33,6 @@
       50% {opacity: 1;}
       100% {opacity: 0;}
     }
-<<<<<<< HEAD
 
     /* Gallery page styling */
     #gallery {
@@ -104,38 +92,77 @@
   <div id="gallery">
     <h1>DarKLeaks Gallery</h1>
     <div class="gallery-container">
+      <!-- 10 placeholder images -->
       <div class="item">
-        <img src="image1.jpg" alt="Image 1" id="img1">
+        <img src="https://via.placeholder.com/200" alt="Image 1" id="img1">
         <a href="https://example.com" target="_blank">Visit link</a>
       </div>
       <div class="item">
-        <img src="image2.jpg" alt="Image 2" id="img2">
+        <img src="https://via.placeholder.com/200" alt="Image 2" id="img2">
         <a href="https://example.com" target="_blank">Visit link</a>
       </div>
       <div class="item">
-        <img src="image3.jpg" alt="Image 3" id="img3">
+        <img src="https://via.placeholder.com/200" alt="Image 3" id="img3">
         <a href="https://example.com" target="_blank">Visit link</a>
       </div>
       <div class="item">
-        <img src="image4.jpg" alt="Image 4" id="img4">
+        <img src="https://via.placeholder.com/200" alt="Image 4" id="img4">
         <a href="https://example.com" target="_blank">Visit link</a>
       </div>
       <div class="item">
-        <img src="image5.jpg" alt="Image 5" id="img5">
-        <a href="https://example.com" target="_blank"_
-
-=======
-  </style>
-</head>
-<body>
-  <h1>DarKLeaks</h1>
+        <img src="https://via.placeholder.com/200" alt="Image 5" id="img5">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="https://via.placeholder.com/200" alt="Image 6" id="img6">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="https://via.placeholder.com/200" alt="Image 7" id="img7">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="https://via.placeholder.com/200" alt="Image 8" id="img8">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="https://via.placeholder.com/200" alt="Image 9" id="img9">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="https://via.placeholder.com/200" alt="Image 10" id="img10">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+    </div>
+  </div>
 
   <script>
-    // Always redirect to main.html after fade
+    // Splash → gallery transition after 4 seconds
     setTimeout(function() {
-      window.location.href = "main.html";
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('gallery').style.display = 'block';
+
+      // Show upload buttons only if ?edit=true
+      const urlParams = new URLSearchParams(window.location.search);
+      if(urlParams.get('edit') === 'true'){
+        const images = document.querySelectorAll('.gallery-container img');
+        images.forEach((img) => {
+          const input = document.createElement('input');
+          input.type = 'file';
+          input.accept = 'image/*';
+          input.className = 'upload-btn';
+          input.addEventListener('change', function(e){
+            const file = e.target.files[0];
+            if(file){
+              img.src = URL.createObjectURL(file);
+            }
+          });
+          img.parentNode.appendChild(input);
+        });
+      }
+
     }, 4000);
   </script>
+
 </body>
 </html>
->>>>>>> 9a037fb1010150fa67169155f2c8c642f664ce09
