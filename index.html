@@ -5,94 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks</title>
 <style>
-  body {
-    margin: 0;
-    font-family: 'Impact', Charcoal, sans-serif;
-    background-color: white;
-    color: black;
-    text-align: center;
-  }
+  body { margin:0; font-family: 'Impact', Charcoal, sans-serif; background:white; color:black; text-align:center; }
+  #splash { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:3em; opacity:0; animation:fadeInOut 2s forwards; z-index:10; background:white; }
+  @keyframes fadeInOut { 0%{opacity:0;}50%{opacity:1;}100%{opacity:0;} }
 
-  /* Splash */
-  #splash {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 3em;
-    opacity: 0;
-    animation: fadeInOut 2s forwards;
-    z-index: 10;
-  }
+  #gallery { display:none; flex-wrap:wrap; justify-content:center; gap:20px; padding:20px; display:flex; }
+  .item { width:90%; max-width:250px; text-align:center; border:1px solid #ccc; border-radius:12px; padding:10px; transition:transform 0.3s, box-shadow 0.3s; background:#f9f9f9; }
+  .item:hover { transform:scale(1.05); box-shadow:0 6px 15px rgba(0,0,0,0.2); }
+  .item img { width:100%; border-radius:10px; border:2px solid black; margin-bottom:5px; }
+  .item input.link-input { width:90%; margin-top:5px; text-align:center; padding:5px; border-radius:6px; border:1px solid #aaa; }
+  .item a { display:block; margin-top:5px; color:#007BFF; text-decoration:none; font-weight:bold; word-wrap:break-word; }
+  .item a:hover { text-decoration:underline; }
+  button.upload-btn { margin-top:5px; padding:5px 10px; border:none; border-radius:6px; background:#007BFF; color:white; cursor:pointer; transition:background 0.3s; }
+  button.upload-btn:hover { background:#0056b3; }
 
-  @keyframes fadeInOut {
-    0% { opacity: 0; }
-    50% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-
-  /* Gallery */
-  #gallery {
-    display: none;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
-    display: flex;
-  }
-
-  .item {
-    width: 90%;
-    max-width: 250px;
-    text-align: center;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    padding: 10px;
-    transition: transform 0.3s, box-shadow 0.3s;
-    background: #f9f9f9;
-  }
-
-  .item:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-  }
-
-  .item img {
-    width: 100%;
-    border-radius: 10px;
-    border: 2px solid black;
-    margin-bottom: 5px;
-  }
-
-  .item input[type="file"] {
-    margin-top: 5px;
-  }
-
-  .item input.link-input {
-    width: 90%;
-    margin-top: 5px;
-    text-align: center;
-  }
-
-  .item a {
-    display: block;
-    margin-top: 5px;
-    color: #007BFF;
-    text-decoration: none;
-    font-weight: bold;
-    word-wrap: break-word;
-  }
-
-  .item a:hover {
-    text-decoration: underline;
-  }
-
-  @media (max-width: 600px) {
-    #splash { font-size: 2em; }
-    .item { max-width: 90%; }
+  @media(max-width:600px){ 
+    #splash{font-size:2em;} 
+    .item{max-width:90%;} 
+    button.upload-btn{width:80%;}
   }
 </style>
 </head>
@@ -100,54 +30,69 @@
 
 <div id="splash">BusinessLinks</div>
 
-<div id="gallery">
-  <!-- 24 Slots -->
-  <script>
-    for(let i=1;i<=24;i++){
-      document.write(`
-        <div class="item">
-          <img id="slot${i}" src="images/placeholder.jpg">
-          <input type="file" onchange="uploadImage(event,'slot${i}')">
-          <input class="link-input" id="link${i}" placeholder="Enter link" oninput="updateLink(${i})">
-          <a id="a${i}" href="#" target="_blank">Visit Link ${i}</a>
-        </div>
-      `);
-    }
-  </script>
-</div>
+<div id="gallery"></div>
+
+<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 
 <script>
-  // Show gallery after splash
-  setTimeout(() => {
-    document.getElementById('splash').style.display = 'none';
-    document.getElementById('gallery').style.display = 'flex';
-  }, 2000);
+const cloudName = 'dsaxcy1sm';   // Your Cloudinary cloud name
+const uploadPreset = 'zrx3ywf6';  // Your unsigned preset
+const gallery = document.getElementById('gallery');
 
-  function uploadImage(event, slotId){
-    const img = document.getElementById(slotId);
-    img.src = URL.createObjectURL(event.target.files[0]);
-    // Save to localStorage
-    localStorage.setItem(slotId, img.src);
-  }
+// Create 24 slots
+for(let i=1;i<=24;i++){
+  const div = document.createElement('div');
+  div.className = 'item';
+  div.innerHTML = `
+    <img id="slot${i}" src="https://via.placeholder.com/250x150?text=Empty+Slot" alt="Image ${i}">
+    <button class="upload-btn" onclick="uploadToCloud(${i})">Upload Image</button>
+    <input class="link-input" id="link${i}" placeholder="Enter link" oninput="updateLink(${i})">
+    <a id="a${i}" href="#" target="_blank">Visit Link ${i}</a>
+  `;
+  gallery.appendChild(div);
+}
 
-  function updateLink(i){
-    const url = document.getElementById('link'+i).value;
-    document.getElementById('a'+i).href = url;
-    localStorage.setItem('link'+i, url);
-  }
+// Show gallery after splash
+setTimeout(()=>{
+  document.getElementById('splash').style.display='none';
+  gallery.style.display='flex';
+},2000);
 
-  // Load saved images and links
-  window.onload = () => {
-    for(let i=1;i<=24;i++){
-      const savedImg = localStorage.getItem('slot'+i);
-      if(savedImg) document.getElementById('slot'+i).src = savedImg;
-      const savedLink = localStorage.getItem('link'+i);
-      if(savedLink) {
-        document.getElementById('a'+i).href = savedLink;
-        document.getElementById('link'+i).value = savedLink;
-      }
+// Update link
+function updateLink(i){
+  const url = document.getElementById('link'+i).value;
+  document.getElementById('a'+i).href = url;
+  localStorage.setItem('link'+i,url);
+}
+
+// Upload function using Cloudinary widget
+function uploadToCloud(slot){
+  const myWidget = cloudinary.createUploadWidget({
+    cloudName: cloudName,
+    uploadPreset: uploadPreset,
+    multiple:false
+  }, (error, result) => {
+    if(!error && result && result.event==='success'){
+      const imgUrl = result.info.secure_url;
+      document.getElementById('slot'+slot).src = imgUrl;
+      localStorage.setItem('slot'+slot,imgUrl);
+    }
+  });
+  myWidget.open();
+}
+
+// Load saved images and links
+window.onload = ()=>{
+  for(let i=1;i<=24;i++){
+    const savedImg = localStorage.getItem('slot'+i);
+    if(savedImg) document.getElementById('slot'+i).src = savedImg;
+    const savedLink = localStorage.getItem('link'+i);
+    if(savedLink){
+      document.getElementById('a'+i).href = savedLink;
+      document.getElementById('link'+i).value = savedLink;
     }
   }
+};
 </script>
 
 </body>
