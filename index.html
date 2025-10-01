@@ -1,148 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BusinessLinks</title>
-<style>
-body { margin:0; font-family:'Impact', Charcoal, sans-serif; background:white; color:black; text-align:center; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BusinessLinks Gallery</title>
+  <style>
+    /* Splash screen */
+    #splash {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: white;
+      color: black;
+      font-family: Impact, Charcoal, sans-serif;
+      font-size: 3rem;
+      animation: fadeOut 3s forwards 2s; /* fade out after 2s */
+    }
 
-/* Splash */
-#splash {
-  position:fixed; top:0; left:0; width:100%; height:100%;
-  display:flex; justify-content:center; align-items:center;
-  font-size:3em; opacity:0;
-  animation:fadeInOut 2s forwards;
-  z-index:10; background:white;
-}
-@keyframes fadeInOut { 0%{opacity:0;}50%{opacity:1;}100%{opacity:0;} }
+    @keyframes fadeOut {
+      to { opacity: 0; visibility: hidden; }
+    }
 
-/* Gallery */
-#gallery {
-  display:none;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:20px;
-  padding:20px;
-  display:flex;
-}
-.item {
-  width:180px;
-  text-align:center;
-  border-radius:12px;
-  padding:10px;
-  background:#f5f5f5;
-  border:1px solid #ddd;
-  transition:transform 0.3s, box-shadow 0.3s;
-  flex: 0 0 auto;
-}
-.item:hover { transform:scale(1.05); box-shadow:0 6px 20px rgba(0,0,0,0.25); }
-.item img {
-  width:100%;
-  aspect-ratio: 9/16;
-  border-radius:10px;
-  border:2px solid #333;
-  object-fit:cover;
-  margin-bottom:8px;
-}
-.item input.link-input {
-  width:90%; margin-top:5px; text-align:center; padding:5px;
-  border-radius:6px; border:1px solid #aaa;
-}
-.item a { display:block; margin-top:5px; color:#007BFF; text-decoration:none; font-weight:bold; word-wrap:break-word; }
-.item a:hover { text-decoration:underline; }
-button.upload-btn {
-  margin-top:5px; padding:5px 10px;
-  border:none; border-radius:6px;
-  background:#007BFF; color:white;
-  cursor:pointer; transition:background 0.3s;
-}
-button.upload-btn:hover { background:#0056b3; }
+    /* Main content hidden until splash ends */
+    #main {
+      display: none;
+      padding: 20px;
+      background-color: white;
+      color: black;
+      font-family: Impact, Charcoal, sans-serif;
+      text-align: center;
+    }
 
-@media(max-width:600px){ 
-  #splash{font-size:2em;} 
-  .item{width:45%; max-width:200px;}
-  button.upload-btn{width:80%;}
-}
-</style>
+    /* Gallery grid */
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    /* Each item fixed 9:16 aspect ratio */
+    .item {
+      position: relative;
+      width: 100%;
+      padding-top: 177.78%; /* 9:16 ratio (16/9*100%) */
+      background-color: #f0f0f0;
+      border: 2px solid #ddd;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+
+    .item img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .item a {
+      display: block;
+      margin-top: 5px;
+      color: #007bff;
+      text-decoration: none;
+      font-size: 0.9rem;
+      word-wrap: break-word;
+    }
+
+    .item a:hover {
+      text-decoration: underline;
+    }
+
+    /* Upload button styling */
+    #uploadContainer {
+      margin: 20px auto;
+    }
+
+    #uploadBtn {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    #uploadBtn:hover {
+      background-color: #0056b3;
+    }
+
+  </style>
 </head>
 <body>
+  <!-- Splash -->
+  <div id="splash">BusinessLinks</div>
 
-<div id="splash">BusinessLinks</div>
-<div id="gallery"></div>
+  <!-- Main gallery page -->
+  <div id="main">
+    <h1>BusinessLinks Gallery</h1>
 
-<script>
-// CONFIG
-const cloudName = 'dsaxcy1sm'; // your Cloudinary cloud name
-const uploadPreset = 'zrx3ywf6'; // your unsigned preset
-const folder = 'businesslinks_gallery';
-const totalSlots = 24;
+    <!-- Upload button -->
+    <div id="uploadContainer">
+      <button id="uploadBtn">Upload Image</button>
+    </div>
 
-// Example array to store uploaded images URLs (replace with your Cloudinary URLs for permanent gallery)
-let imagesURLs = new Array(totalSlots).fill('https://via.placeholder.com/200x356?text=Empty+Slot');
-let links = new Array(totalSlots).fill('#');
+    <div class="gallery" id="gallery">
+      <!-- 24 slots -->
+      <!-- They will fill automatically after you upload images -->
+      ${Array.from({ length: 24 }).map((_, i) => `
+        <div class="item">
+          <img id="img${i+1}" src="" alt="Image ${i+1}">
+          <a id="link${i+1}" href="#" target="_blank">Add link here</a>
+        </div>
+      `).join('')}
+    </div>
+  </div>
 
-const gallery = document.getElementById('gallery');
+  <!-- Cloudinary upload widget -->
+  <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
+  <script>
+    // Show main content after splash
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('main').style.display = 'block';
+    }, 4000); // 4 seconds total
 
-// Splash animation ends → show gallery
-const splash = document.getElementById('splash');
-splash.addEventListener('animationend', () => {
-    splash.style.display = 'none';
-    gallery.style.display = 'flex';
-    renderGallery();
-});
+    // Cloudinary config
+    const cloudName = 'dsaxcy1sm'; // your cloud name
+    const uploadPreset = 'zrx3ywf6'; // your preset
 
-// Create gallery slots dynamically
-function renderGallery(){
-  gallery.innerHTML = '';
-  for(let i=0;i<totalSlots;i++){
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.innerHTML = `
-      <img id="slot${i+1}" src="${imagesURLs[i]}" alt="Image ${i+1}">
-      <button class="upload-btn" onclick="uploadToCloud(${i+1})">Upload Image</button>
-      <input class="link-input" id="link${i+1}" placeholder="Enter link" value="${links[i]}" oninput="updateLink(${i+1})">
-      <a id="a${i+1}" href="${links[i]}" target="_blank">Visit Link ${i+1}</a>
-    `;
-    gallery.appendChild(div);
-  }
-}
+    const uploadBtn = document.getElementById('uploadBtn');
+    uploadBtn.addEventListener('click', function() {
+      cloudinary.openUploadWidget(
+        {
+          cloudName: cloudName,
+          uploadPreset: uploadPreset,
+          sources: ['local'],
+          multiple: false,
+          maxFiles: 1
+        },
+        (error, result) => {
+          if (!error && result && result.event === "success") {
+            const uploadedImageUrl = result.info.secure_url;
 
-// Update link under image
-function updateLink(i){
-  const url = document.getElementById('link'+i).value;
-  document.getElementById('a'+i).href = url;
-  links[i] = url; // save permanently in this session
-}
-
-// Upload image to Cloudinary
-async function uploadToCloud(slot){
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.onchange = async () => {
-    const file = fileInput.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
-    formData.append('folder', folder);
-
-    try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
-      imagesURLs[slot-1] = data.secure_url; // save URL permanently for this session
-      document.getElementById('slot'+slot).src = data.secure_url;
-      alert('Image uploaded! Visible to all after adding to imagesURLs.');
-    } catch(e){
-      alert('Upload failed: '+e.message);
-    }
-  };
-  fileInput.click();
-}
-</script>
-
+            // Find first empty slot
+            for (let i = 1; i <= 24; i++) {
+              const imgEl = document.getElementById(`img${i}`);
+              if (!imgEl.src || imgEl.src === window.location.href) {
+                imgEl.src = uploadedImageUrl;
+                break;
+              }
+            }
+          }
+        }
+      );
+    });
+  </script>
 </body>
 </html>
