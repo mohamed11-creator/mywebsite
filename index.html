@@ -24,10 +24,9 @@
     }
 
     #splash h1 {
-      font-size: clamp(30px, 12vw, 80px); /* responsive for mobile */
+      font-size: clamp(30px, 12vw, 80px); /* responsive font */
       animation: fadeInOut 4s ease-in-out;
       margin: 0;
-      padding: 0;
     }
 
     @keyframes fadeInOut {
@@ -36,9 +35,9 @@
       100% {opacity: 0;}
     }
 
-    /* Gallery Page Styling */
+    /* Gallery Styling */
     #gallery {
-      display: none; /* hidden initially */
+      display: none;
       padding: 20px;
     }
 
@@ -76,14 +75,12 @@
       text-decoration: underline;
     }
 
-    /* Upload & Delete Button Styling */
     .upload-btn {
       margin-top: 5px;
       display: block;
       cursor: pointer;
     }
 
-    /* Mobile adjustments */
     @media (max-width: 600px) {
       .gallery-container .item {
         width: 45%;
@@ -102,7 +99,7 @@
   <div id="gallery">
     <h1>BusinessLinks Gallery</h1>
     <div class="gallery-container">
-      <!-- 24 placeholder images -->
+      <!-- 24 placeholders -->
       <script>
         for(let i=1; i<=24; i++){
           document.write(`
@@ -122,7 +119,7 @@
       document.getElementById('splash').style.display = 'none';
       document.getElementById('gallery').style.display = 'block';
 
-      // Show upload & delete buttons only if ?edit=true
+      // Enable edit mode if ?edit=true
       const urlParams = new URLSearchParams(window.location.search);
       if(urlParams.get('edit') === 'true'){
         const images = document.querySelectorAll('.gallery-container img');
@@ -132,4 +129,31 @@
           uploadInput.type = 'file';
           uploadInput.accept = 'image/*';
           uploadInput.className = 'upload-btn';
-          uploadInput.addEventListener('change
+          uploadInput.addEventListener('change', function(e){
+            const file = e.target.files[0];
+            if(file){
+              img.src = URL.createObjectURL(file);
+            }
+          });
+          img.parentNode.appendChild(uploadInput);
+
+          // Delete button
+          const deleteBtn = document.createElement('button');
+          deleteBtn.innerText = 'Delete';
+          deleteBtn.className = 'upload-btn';
+          deleteBtn.addEventListener('click', function(){
+            img.src = 'https://via.placeholder.com/200';
+          });
+          img.parentNode.appendChild(deleteBtn);
+        });
+      }
+    }
+
+    // Ensure transition happens after 4s
+    window.onload = function() {
+      setTimeout(showGallery, 4000);
+    };
+  </script>
+
+</body>
+</html>
