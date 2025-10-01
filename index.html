@@ -29,27 +29,41 @@
 <body>
 
 <div id="splash">BusinessLinks</div>
-
 <div id="gallery"></div>
 
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
-
 <script>
-const cloudName = 'dsaxcy1sm';   // Your Cloudinary cloud name
-const uploadPreset = 'zrx3ywf6';  // Your unsigned preset
-const gallery = document.getElementById('gallery');
+// Cloudinary config
+const cloudName = 'dsaxcy1sm';
+const uploadPreset = 'zrx3ywf6';
+const folder = 'businesslinks_gallery'; // Create a folder in Cloudinary
 
-// Create 24 slots
-for(let i=1;i<=24;i++){
-  const div = document.createElement('div');
-  div.className = 'item';
-  div.innerHTML = `
-    <img id="slot${i}" src="https://via.placeholder.com/250x150?text=Empty+Slot" alt="Image ${i}">
-    <button class="upload-btn" onclick="uploadToCloud(${i})">Upload Image</button>
-    <input class="link-input" id="link${i}" placeholder="Enter link" oninput="updateLink(${i})">
-    <a id="a${i}" href="#" target="_blank">Visit Link ${i}</a>
-  `;
-  gallery.appendChild(div);
+const gallery = document.getElementById('gallery');
+const totalSlots = 24;
+
+// Fetch images from Cloudinary folder automatically
+async function loadGallery() {
+  // Cloudinary JSON list of images
+  const url = `https://res.cloudinary.com/${cloudName}/image/list/${folder}.json`;
+  let images = [];
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    images = data.resources.map(r => r.url); // all images in the folder
+  } catch(e){ console.log('No images yet', e); }
+
+  for(let i=0;i<totalSlots;i++){
+    const div = document.createElement('div');
+    div.className = 'item';
+    const imgUrl = images[i] || 'https://via.placeholder.com/250x150?text=Empty+Slot';
+    div.innerHTML = `
+      <img id="slot${i+1}" src="${imgUrl}" alt="Image ${i+1}">
+      <button class="upload-btn" onclick="uploadToCloud(${i+1})">Upload Image</button>
+      <input class="link-input" id="link${i+1}" placeholder="Enter link" oninput="updateLink(${i+1})">
+      <a id="a${i+1}" href="#" target="_blank">Visit Link ${i+1}</a>
+    `;
+    gallery.appendChild(div);
+  }
 }
 
 // Show gallery after splash
@@ -62,7 +76,6 @@ setTimeout(()=>{
 function updateLink(i){
   const url = document.getElementById('link'+i).value;
   document.getElementById('a'+i).href = url;
-  localStorage.setItem('link'+i,url);
 }
 
 // Upload function using Cloudinary widget
@@ -70,30 +83,19 @@ function uploadToCloud(slot){
   const myWidget = cloudinary.createUploadWidget({
     cloudName: cloudName,
     uploadPreset: uploadPreset,
+    folder: folder,
     multiple:false
   }, (error, result) => {
     if(!error && result && result.event==='success'){
       const imgUrl = result.info.secure_url;
       document.getElementById('slot'+slot).src = imgUrl;
-      localStorage.setItem('slot'+slot,imgUrl);
     }
   });
   myWidget.open();
 }
 
-// Load saved images and links
-window.onload = ()=>{
-  for(let i=1;i<=24;i++){
-    const savedImg = localStorage.getItem('slot'+i);
-    if(savedImg) document.getElementById('slot'+i).src = savedImg;
-    const savedLink = localStorage.getItem('link'+i);
-    if(savedLink){
-      document.getElementById('a'+i).href = savedLink;
-      document.getElementById('link'+i).value = savedLink;
-    }
-  }
-};
+// Initialize
+loadGallery();
 </script>
-
 </body>
 </html>
