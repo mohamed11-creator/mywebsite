@@ -1,10 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>My First GitHub Page</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DarKLeaks</title>
+  <style>
+    body {
+      background-color: white;
+      color: black;
+      font-family: Impact, Charcoal, sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    /* Splash page styling */
+    #splash {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    #splash h1 {
+      font-size: 5rem;
+      animation: fadeInOut 4s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0% {opacity: 0;}
+      50% {opacity: 1;}
+      100% {opacity: 0;}
+    }
+
+    /* Gallery page styling */
+    #gallery {
+      display: none; /* hidden initially */
+      padding: 20px;
+    }
+
+    #gallery h1 {
+      margin-bottom: 30px;
+    }
+
+    .gallery-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .item {
+      width: 200px;
+      text-align: center;
+    }
+
+    .item img {
+      width: 100%;
+      border-radius: 8px;
+      border: 2px solid black;
+    }
+
+    .item a {
+      display: block;
+      margin-top: 8px;
+      color: #0000EE;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .item a:hover {
+      text-decoration: underline;
+    }
+
+    /* Upload button styling */
+    .upload-btn {
+      margin-top: 5px;
+      display: block;
+    }
+  </style>
 </head>
 <body>
-    <h1>Hello, World!</h1>
-    <p>This is my GitHub Pages front page.</p>
-</body>
-</html>
+
+  <!-- Splash Page -->
+  <div id="splash">
+    <h1>DarKLeaks</h1>
+  </div>
+
+  <!-- Gallery Page -->
+  <div id="gallery">
+    <h1>DarKLeaks Gallery</h1>
+    <div class="gallery-container">
+      <div class="item">
+        <img src="image1.jpg" alt="Image 1" id="img1">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="image2.jpg" alt="Image 2" id="img2">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="image3.jpg" alt="Image 3" id="img3">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="image4.jpg" alt="Image 4" id="img4">
+        <a href="https://example.com" target="_blank">Visit link</a>
+      </div>
+      <div class="item">
+        <img src="image5.jpg" alt="Image 5" id="img5">
+        <a href="https://example.com" target="_blank"_
+
