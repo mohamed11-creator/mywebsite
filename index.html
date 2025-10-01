@@ -33,14 +33,14 @@
   .item {
     width:90%; max-width:250px;
     text-align:center;
-    border:1px solid #ccc;
     border-radius:12px;
     padding:10px;
+    background:#f5f5f5;
+    border:1px solid #ddd;
     transition:transform 0.3s, box-shadow 0.3s;
-    background:#f9f9f9;
   }
-  .item:hover { transform:scale(1.05); box-shadow:0 6px 15px rgba(0,0,0,0.2); }
-  .item img { width:100%; border-radius:10px; border:2px solid black; margin-bottom:5px; }
+  .item:hover { transform:scale(1.05); box-shadow:0 6px 20px rgba(0,0,0,0.25); }
+  .item img { width:100%; border-radius:10px; border:2px solid #333; margin-bottom:8px; object-fit:cover; height:150px; }
   .item input.link-input {
     width:90%;
     margin-top:5px;
@@ -63,6 +63,7 @@
     #splash{font-size:2em;} 
     .item{max-width:90%;} 
     button.upload-btn{width:80%;}
+    .item img { height:120px; }
   }
 </style>
 </head>
