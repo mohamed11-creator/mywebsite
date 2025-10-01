@@ -6,17 +6,57 @@
 <title>BusinessLinks</title>
 <style>
   body { margin:0; font-family: 'Impact', Charcoal, sans-serif; background:white; color:black; text-align:center; }
-  #splash { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:3em; opacity:0; animation:fadeInOut 2s forwards; z-index:10; background:white; }
+  
+  /* Splash */
+  #splash {
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    display:flex; justify-content:center; align-items:center;
+    font-size:3em;
+    opacity:0;
+    animation:fadeInOut 2s forwards;
+    z-index:10;
+    background:white;
+  }
   @keyframes fadeInOut { 0%{opacity:0;}50%{opacity:1;}100%{opacity:0;} }
 
-  #gallery { display:none; flex-wrap:wrap; justify-content:center; gap:20px; padding:20px; display:flex; }
-  .item { width:90%; max-width:250px; text-align:center; border:1px solid #ccc; border-radius:12px; padding:10px; transition:transform 0.3s, box-shadow 0.3s; background:#f9f9f9; }
+  /* Gallery */
+  #gallery {
+    display:none;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:20px;
+    padding:20px;
+    display:flex;
+  }
+  .item {
+    width:90%; max-width:250px;
+    text-align:center;
+    border:1px solid #ccc;
+    border-radius:12px;
+    padding:10px;
+    transition:transform 0.3s, box-shadow 0.3s;
+    background:#f9f9f9;
+  }
   .item:hover { transform:scale(1.05); box-shadow:0 6px 15px rgba(0,0,0,0.2); }
   .item img { width:100%; border-radius:10px; border:2px solid black; margin-bottom:5px; }
-  .item input.link-input { width:90%; margin-top:5px; text-align:center; padding:5px; border-radius:6px; border:1px solid #aaa; }
+  .item input.link-input {
+    width:90%;
+    margin-top:5px;
+    text-align:center;
+    padding:5px;
+    border-radius:6px;
+    border:1px solid #aaa;
+  }
   .item a { display:block; margin-top:5px; color:#007BFF; text-decoration:none; font-weight:bold; word-wrap:break-word; }
   .item a:hover { text-decoration:underline; }
-  button.upload-btn { margin-top:5px; padding:5px 10px; border:none; border-radius:6px; background:#007BFF; color:white; cursor:pointer; transition:background 0.3s; }
+  button.upload-btn {
+    margin-top:5px; padding:5px 10px;
+    border:none; border-radius:6px;
+    background:#007BFF; color:white;
+    cursor:pointer; transition:background 0.3s;
+  }
   button.upload-btn:hover { background:#0056b3; }
 
   @media(max-width:600px){ 
@@ -36,20 +76,19 @@
 // Cloudinary config
 const cloudName = 'dsaxcy1sm';
 const uploadPreset = 'zrx3ywf6';
-const folder = 'businesslinks_gallery'; // Create a folder in Cloudinary
+const folder = 'businesslinks_gallery';
 
 const gallery = document.getElementById('gallery');
 const totalSlots = 24;
 
-// Fetch images from Cloudinary folder automatically
+// Load gallery images from Cloudinary folder
 async function loadGallery() {
-  // Cloudinary JSON list of images
   const url = `https://res.cloudinary.com/${cloudName}/image/list/${folder}.json`;
   let images = [];
   try {
     const res = await fetch(url);
     const data = await res.json();
-    images = data.resources.map(r => r.url); // all images in the folder
+    images = data.resources.map(r => r.url);
   } catch(e){ console.log('No images yet', e); }
 
   for(let i=0;i<totalSlots;i++){
@@ -66,19 +105,20 @@ async function loadGallery() {
   }
 }
 
-// Show gallery after splash
-setTimeout(()=>{
-  document.getElementById('splash').style.display='none';
-  gallery.style.display='flex';
-},2000);
+// Show gallery after splash animation ends
+const splash = document.getElementById('splash');
+splash.addEventListener('animationend', () => {
+    splash.style.display = 'none';
+    gallery.style.display = 'flex';
+});
 
-// Update link
+// Update link under image
 function updateLink(i){
   const url = document.getElementById('link'+i).value;
   document.getElementById('a'+i).href = url;
 }
 
-// Upload function using Cloudinary widget
+// Upload image to Cloudinary
 function uploadToCloud(slot){
   const myWidget = cloudinary.createUploadWidget({
     cloudName: cloudName,
@@ -94,8 +134,9 @@ function uploadToCloud(slot){
   myWidget.open();
 }
 
-// Initialize
+// Initialize gallery
 loadGallery();
 </script>
+
 </body>
 </html>
