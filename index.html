@@ -5,20 +5,95 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks Gallery</title>
 <style>
-  body { margin:0; font-family:Impact, Charcoal, sans-serif; background:white; color:black; text-align:center; }
-  #splash { display:flex; justify-content:center; align-items:center; height:100vh; font-size:3rem; animation:fadeOut 3s forwards 2s; }
-  @keyframes fadeOut { to{opacity:0; visibility:hidden;} }
-  #main { display:none; padding:20px; }
-  h1{margin-bottom:20px;}
-  .gallery { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:15px; margin-top:20px; }
-  .item { position:relative; padding-top:177.78%; border-radius:12px; overflow:hidden; box-shadow:0 4px 8px rgba(0,0,0,0.1); transition:transform 0.3s,box-shadow 0.3s; }
-  .item:hover { transform:scale(1.03); box-shadow:0 8px 16px rgba(0,0,0,0.2); }
-  .item img { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; }
-  .item a { position:absolute; bottom:5px; width:100%; text-align:center; color:#007bff; text-decoration:none; background:rgba(255,255,255,0.7); font-weight:bold; padding:2px 0; }
-  .item a:hover { text-decoration:underline; }
-  #uploadBtn { padding:10px 25px; background:#007bff; color:white; border:none; cursor:pointer; border-radius:8px; font-size:1rem; margin-bottom:20px; }
-  #uploadBtn:hover { background:#0056b3; }
-  @media(max-width:600px){ .gallery { grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:10px; } }
+body {
+  margin:0;
+  font-family:Impact, Charcoal, sans-serif;
+  background:white;
+  color:black;
+  text-align:center;
+}
+#splash {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  font-size:calc(5vw + 1rem);
+  animation:fadeSplash 4s forwards;
+}
+@keyframes fadeSplash {
+  0% { opacity:0; }
+  10% { opacity:1; }
+  70% { opacity:1; }
+  100% { opacity:0; display:none; }
+}
+#main {
+  display:none;
+  padding:20px;
+}
+h1 {
+  margin-bottom:20px;
+  font-size:2rem;
+}
+.gallery {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+  gap:15px;
+  margin-top:20px;
+}
+.item {
+  position:relative;
+  width:100%;
+  padding-top:177.78%; /* 9:16 ratio */
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:0 4px 8px rgba(0,0,0,0.1);
+  transition:transform 0.3s,box-shadow 0.3s;
+}
+.item:hover {
+  transform:scale(1.03);
+  box-shadow:0 8px 16px rgba(0,0,0,0.2);
+}
+.item img {
+  position:absolute;
+  top:0; left:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.item a {
+  position:absolute;
+  bottom:0;
+  width:100%;
+  text-align:center;
+  color:#007bff;
+  text-decoration:none;
+  background:rgba(255,255,255,0.8);
+  font-weight:bold;
+  padding:4px 0;
+  cursor:pointer;
+}
+.item a:hover {
+  text-decoration:underline;
+}
+.upload-btn {
+  position:absolute;
+  top:5px;
+  right:5px;
+  background:#007bff;
+  color:white;
+  border:none;
+  padding:4px 6px;
+  font-size:0.7rem;
+  border-radius:5px;
+  cursor:pointer;
+}
+.upload-btn:hover {
+  background:#0056b3;
+}
+@media(max-width:600px){
+  h1 { font-size:1.5rem; }
+  .gallery { grid-template-columns:repeat(auto-fill,minmax(70px,1fr)); gap:10px; }
+}
 </style>
 </head>
 <body>
@@ -27,51 +102,74 @@
 
 <div id="main">
   <h1>BusinessLinks Gallery</h1>
-  <button id="uploadBtn">Upload Image</button>
   <div class="gallery" id="gallery"></div>
 </div>
 
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 <script>
-const cloudName='dsaxcy1sm';
-const uploadPreset='zrx3ywf6';
-const galleryFileUrl='/.netlify/functions/save-gallery'; // serverless function endpoint
-const gallery=document.getElementById('gallery');
+const cloudName = 'dsaxcy1sm';
+const uploadPreset = 'zrx3ywf6';
+const galleryFileUrl = '/.netlify/functions/save-gallery';
+const gallery = document.getElementById('gallery');
 
-let galleryData=Array(24).fill({ img:'', link:'#' });
+let galleryData = Array(24).fill({ img:'', link:'#' });
 
-// Load gallery from serverless function
+// Load gallery
 async function loadGallery() {
-  try{
-    const res=await fetch(galleryFileUrl);
-    const data=await res.json();
-    galleryData=data.galleryData;
+  try {
+    const res = await fetch(galleryFileUrl);
+    const data = await res.json();
+    galleryData = data.galleryData;
     renderGallery();
-  }catch(err){ console.log('Error loading gallery',err); renderGallery(); }
+  } catch(e){ console.log('Error loading gallery', e); renderGallery(); }
 }
 
-// Render the gallery
-function renderGallery(){
-  gallery.innerHTML='';
+// Render gallery
+function renderGallery() {
+  gallery.innerHTML = '';
   galleryData.forEach((data,i)=>{
-    const div=document.createElement('div');
+    const div = document.createElement('div');
     div.classList.add('item');
-    div.innerHTML=`<img src="${data.img}" alt=""><a href="${data.link}" target="_blank">Edit Link</a>`;
+    div.innerHTML = `
+      <img src="${data.img}" alt="">
+      <button class="upload-btn">Upload</button>
+      <a>Edit Link</a>
+    `;
     gallery.appendChild(div);
 
-    const a=div.querySelector('a');
-    a.addEventListener('click',async ()=>{
-      const newLink=prompt('Enter link for this image:', data.link);
+    // Edit link
+    const a = div.querySelector('a');
+    a.addEventListener('click', async ()=>{
+      const newLink = prompt('Enter link for this image:', data.link);
       if(newLink!==null){
-        galleryData[i].link=newLink;
+        galleryData[i].link = newLink;
         await saveGallery();
         renderGallery();
       }
     });
+
+    // Upload image for this slot
+    const btn = div.querySelector('.upload-btn');
+    btn.addEventListener('click', ()=>{
+      cloudinary.openUploadWidget({
+        cloudName: cloudName,
+        uploadPreset: uploadPreset,
+        sources: ['local','url','camera'],
+        multiple: false,
+        folder: 'businesslinks',
+        maxFiles: 1
+      }, async (error,result)=>{
+        if(!error && result && result.event==='success'){
+          galleryData[i].img = result.info.secure_url;
+          await saveGallery();
+          renderGallery();
+        }
+      });
+    });
   });
 }
 
-// Save gallery permanently using serverless function
+// Save gallery permanently
 async function saveGallery(){
   try{
     await fetch(galleryFileUrl, {
@@ -79,32 +177,8 @@ async function saveGallery(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({ galleryData })
     });
-  }catch(err){ console.log('Error saving gallery',err); }
+  } catch(err){ console.log('Error saving gallery', err); }
 }
-
-// Upload images
-document.getElementById('uploadBtn').addEventListener('click',()=>{
-  cloudinary.openUploadWidget({
-    cloudName: cloudName,
-    uploadPreset: uploadPreset,
-    sources: ['local','url','camera'],
-    multiple: false,
-    folder: 'businesslinks',
-    maxFiles: 1
-  }, async (error,result)=>{
-    if(!error && result && result.event==='success'){
-      const uploadedImage=result.info.secure_url;
-      for(let i=0;i<24;i++){
-        if(!galleryData[i].img){
-          galleryData[i].img=uploadedImage;
-          await saveGallery();
-          renderGallery();
-          break;
-        }
-      }
-    }
-  });
-});
 
 // Splash fade
 setTimeout(()=>{
