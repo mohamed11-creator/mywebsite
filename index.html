@@ -24,7 +24,7 @@
     }
 
     #splash h1 {
-      font-size: 10vw; /* scales with screen width */
+      font-size: clamp(30px, 12vw, 80px); /* responsive for mobile */
       animation: fadeInOut 4s ease-in-out;
       margin: 0;
       padding: 0;
@@ -76,10 +76,11 @@
       text-decoration: underline;
     }
 
-    /* Upload Button Styling */
+    /* Upload & Delete Button Styling */
     .upload-btn {
       margin-top: 5px;
       display: block;
+      cursor: pointer;
     }
 
     /* Mobile adjustments */
@@ -100,48 +101,4 @@
   <!-- Gallery Page -->
   <div id="gallery">
     <h1>BusinessLinks Gallery</h1>
-    <div class="gallery-container">
-      <!-- 24 placeholder images -->
-      <script>
-        for(let i=1; i<=24; i++){
-          document.write(`
-            <div class="item">
-              <img src="https://via.placeholder.com/200" alt="Image ${i}" id="img${i}">
-              <a href="https://example.com" target="_blank">Visit link</a>
-            </div>
-          `);
-        }
-      </script>
-    </div>
-  </div>
-
-  <script>
-    // Splash → Gallery transition after 4 seconds
-    setTimeout(function() {
-      document.getElementById('splash').style.display = 'none';
-      document.getElementById('gallery').style.display = 'block';
-
-      // Show upload buttons only if ?edit=true
-      const urlParams = new URLSearchParams(window.location.search);
-      if(urlParams.get('edit') === 'true'){
-        const images = document.querySelectorAll('.gallery-container img');
-        images.forEach((img) => {
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = 'image/*';
-          input.className = 'upload-btn';
-          input.addEventListener('change', function(e){
-            const file = e.target.files[0];
-            if(file){
-              img.src = URL.createObjectURL(file);
-            }
-          });
-          img.parentNode.appendChild(input);
-        });
-      }
-
-    }, 4000);
-  </script>
-
-</body>
-</html>
+    <div
