@@ -5,19 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks</title>
 <style>
-  body { margin:0; font-family: 'Impact', Charcoal, sans-serif; background:white; color:black; text-align:center; }
+  body { margin:0; font-family:'Impact', Charcoal, sans-serif; background:white; color:black; text-align:center; }
   
   /* Splash */
   #splash {
-    position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
+    position:fixed; top:0; left:0; width:100%; height:100%;
     display:flex; justify-content:center; align-items:center;
-    font-size:3em;
-    opacity:0;
+    font-size:3em; opacity:0;
     animation:fadeInOut 2s forwards;
-    z-index:10;
-    background:white;
+    z-index:10; background:white;
   }
   @keyframes fadeInOut { 0%{opacity:0;}50%{opacity:1;}100%{opacity:0;} }
 
@@ -42,12 +38,8 @@
   .item:hover { transform:scale(1.05); box-shadow:0 6px 20px rgba(0,0,0,0.25); }
   .item img { width:100%; border-radius:10px; border:2px solid #333; margin-bottom:8px; object-fit:cover; height:150px; }
   .item input.link-input {
-    width:90%;
-    margin-top:5px;
-    text-align:center;
-    padding:5px;
-    border-radius:6px;
-    border:1px solid #aaa;
+    width:90%; margin-top:5px; text-align:center; padding:5px;
+    border-radius:6px; border:1px solid #aaa;
   }
   .item a { display:block; margin-top:5px; color:#007BFF; text-decoration:none; font-weight:bold; word-wrap:break-word; }
   .item a:hover { text-decoration:underline; }
@@ -119,12 +111,13 @@ function updateLink(i){
   document.getElementById('a'+i).href = url;
 }
 
-// Upload image to Cloudinary
+// Upload image to Cloudinary (only from your device)
 function uploadToCloud(slot){
   const myWidget = cloudinary.createUploadWidget({
     cloudName: cloudName,
     uploadPreset: uploadPreset,
     folder: folder,
+    sources: ['local'],  // only local device
     multiple:false
   }, (error, result) => {
     if(!error && result && result.event==='success'){
