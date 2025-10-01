@@ -14,28 +14,29 @@
       color: black;
     }
 
-    /* Splash Page Styling */
+    /* Splash Page */
     #splash {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       width: 100vw;
+      flex-direction: column;
     }
 
     #splash h1 {
-      font-size: clamp(30px, 12vw, 80px); /* responsive font */
-      animation: fadeInOut 4s ease-in-out;
-      margin: 0;
+      font-size: clamp(30px, 12vw, 80px);
+      opacity: 0;
+      animation: fadeOnce 3s ease-in-out forwards;
     }
 
-    @keyframes fadeInOut {
+    @keyframes fadeOnce {
       0% {opacity: 0;}
-      50% {opacity: 1;}
+      30% {opacity: 1;}
       100% {opacity: 0;}
     }
 
-    /* Gallery Styling */
+    /* Gallery */
     #gallery {
       display: none;
       padding: 20px;
@@ -75,85 +76,4 @@
       text-decoration: underline;
     }
 
-    .upload-btn {
-      margin-top: 5px;
-      display: block;
-      cursor: pointer;
-    }
-
-    @media (max-width: 600px) {
-      .gallery-container .item {
-        width: 45%;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- Splash Page -->
-  <div id="splash">
-    <h1>BusinessLinks</h1>
-  </div>
-
-  <!-- Gallery Page -->
-  <div id="gallery">
-    <h1>BusinessLinks Gallery</h1>
-    <div class="gallery-container">
-      <!-- 24 placeholders -->
-      <script>
-        for(let i=1; i<=24; i++){
-          document.write(`
-            <div class="item">
-              <img src="https://via.placeholder.com/200" alt="Image ${i}" id="img${i}">
-              <a href="https://example.com" target="_blank">Visit link</a>
-            </div>
-          `);
-        }
-      </script>
-    </div>
-  </div>
-
-  <script>
-    // Function to show gallery after splash
-    function showGallery() {
-      document.getElementById('splash').style.display = 'none';
-      document.getElementById('gallery').style.display = 'block';
-
-      // Enable edit mode if ?edit=true
-      const urlParams = new URLSearchParams(window.location.search);
-      if(urlParams.get('edit') === 'true'){
-        const images = document.querySelectorAll('.gallery-container img');
-        images.forEach((img) => {
-          // Upload button
-          const uploadInput = document.createElement('input');
-          uploadInput.type = 'file';
-          uploadInput.accept = 'image/*';
-          uploadInput.className = 'upload-btn';
-          uploadInput.addEventListener('change', function(e){
-            const file = e.target.files[0];
-            if(file){
-              img.src = URL.createObjectURL(file);
-            }
-          });
-          img.parentNode.appendChild(uploadInput);
-
-          // Delete button
-          const deleteBtn = document.createElement('button');
-          deleteBtn.innerText = 'Delete';
-          deleteBtn.className = 'upload-btn';
-          deleteBtn.addEventListener('click', function(){
-            img.src = 'https://via.placeholder.com/200';
-          });
-          img.parentNode.appendChild(deleteBtn);
-        });
-      }
-    }
-
-    // Ensure transition happens after 4s
-    window.onload = function() {
-      setTimeout(showGallery, 4000);
-    };
-  </script>
-
-</body>
-</html>
+    @media (
