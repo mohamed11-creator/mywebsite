@@ -5,91 +5,105 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks</title>
 <style>
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Impact, Charcoal, sans-serif;
-    background-color: white;
-    color: black;
-    text-align: center;
-  }
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Impact, Charcoal, sans-serif;
+  background-color: white;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+}
 
-  /* Splash */
-  #splash {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    font-size: 5vw;
-    opacity: 0;
-    animation: fadeInOut 2s forwards;
-  }
+/* Splash */
+#splash {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  font-size: 8vw;
+  opacity: 0;
+  animation: fadeInOut 2s forwards;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
 
-  @keyframes fadeInOut {
-    0% { opacity: 0; }
-    50% { opacity: 1; }
-    100% { opacity: 0; }
-  }
+/* Gallery page */
+#gallery {
+  display: none;
+  width: 100%;
+  padding: 20px;
+  flex: 1;
+  box-sizing: border-box;
+}
 
-  /* Gallery page */
-  #gallery {
-    display: none;
-    padding: 20px;
-  }
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+  justify-items: center;
+  align-items: start;
+}
 
-  .gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 10px;
-    justify-items: center;
-  }
+.slot {
+  position: relative;
+  width: 160px;
+  height: 284px; /* 9:16 ratio */
+  border: 2px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  padding: 5px;
+}
 
-  .slot {
-    position: relative;
-    width: 160px; /* maintains 9:16 */
-    height: 284px;
-    border: 2px solid #ccc;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    overflow: hidden;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  }
+.slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
 
-  .slot img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+.slot input[type="text"] {
+  width: 90%;
+  margin-top: 5px;
+  text-align: center;
+  display: none; /* only show when Add Link clicked */
+  font-size: 0.8em;
+  padding: 3px;
+  border-radius: 4px;
+  border: 1px solid #aaa;
+}
 
-  .slot input[type="text"] {
-    width: 90%;
-    margin-top: 5px;
-    text-align: center;
-  }
+.slot button {
+  margin-top: 4px;
+  font-size: 0.8em;
+  cursor: pointer;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+}
+.slot button:hover {
+  background-color: #0056b3;
+}
 
-  .slot button {
-    margin-top: 3px;
-    font-size: 0.8em;
-    cursor: pointer;
-  }
-
-  .upload-btn {
-    margin-bottom: 20px;
-  }
-
-  @media (max-width: 480px) {
-    .slot {
-      width: 120px;
-      height: 213px;
-    }
-    #splash {
-      font-size: 10vw;
-    }
-  }
+@media (max-width: 600px) {
+  .slot { width: 120px; height: 213px; }
+  #splash { font-size: 12vw; }
+}
 </style>
 </head>
 <body>
@@ -99,65 +113,82 @@
 
 <!-- Gallery -->
 <div id="gallery">
-  <button class="upload-btn" onclick="uploadImage()">Upload Image</button>
   <div class="gallery-grid" id="galleryGrid">
-    <!-- 24 slots -->
     <script>
-      for(let i=1;i<=24;i++){
-        document.write(`
+      const cloudName = 'dsaxcy1sm'; // Your Cloudinary cloud name
+      const uploadPreset = 'zrx3ywf6'; // Your unsigned upload preset
+
+      // Create 24 slots
+      for (let i = 1; i <= 24; i++) {
+        const slotHTML = `
           <div class="slot" id="slot${i}">
             <img id="img${i}" src="" alt="">
             <input type="text" id="link${i}" placeholder="Add link here">
+            <button onclick="uploadSingle(${i})">Upload Image</button>
+            <button onclick="addLink(${i})">Add Link</button>
             <button onclick="removeImage(${i})">Remove</button>
           </div>
-        `);
+        `;
+        document.write(slotHTML);
+      }
+
+      function uploadSingle(i){
+        cloudinary.openUploadWidget({
+          cloudName: cloudName,
+          uploadPreset: uploadPreset,
+          multiple: false,
+          sources: ['local','url','camera'],
+          folder: "BusinessLinks",
+        }, (error, result) => {
+          if (!error && result && result.event === "success") {
+            const imgUrl = result.info.secure_url;
+            document.getElementById('img'+i).src = imgUrl;
+            saveSlotData(i, imgUrl, document.getElementById('link'+i).value);
+          }
+        });
+      }
+
+      function addLink(i){
+        const input = document.getElementById('link'+i);
+        input.style.display = 'block';
+        input.focus();
+        input.onchange = () => saveSlotData(i, document.getElementById('img'+i).src, input.value);
+      }
+
+      function removeImage(i){
+        document.getElementById('img'+i).src = "";
+        document.getElementById('link'+i).value = "";
+        saveSlotData(i, "", "");
+      }
+
+      function saveSlotData(i, imgUrl, link){
+        const data = JSON.parse(localStorage.getItem('businessLinksData') || "{}");
+        data[i] = { imgUrl, link };
+        localStorage.setItem('businessLinksData', JSON.stringify(data));
+      }
+
+      function loadSlotData(){
+        const data = JSON.parse(localStorage.getItem('businessLinksData') || "{}");
+        for (let i = 1; i <= 24; i++) {
+          if (data[i]){
+            document.getElementById('img'+i).src = data[i].imgUrl;
+            document.getElementById('link'+i).value = data[i].link;
+          }
+        }
+      }
+
+      window.onload = () => {
+        setTimeout(() => {
+          document.getElementById('splash').style.display = 'none';
+          document.getElementById('gallery').style.display = 'flex';
+          loadSlotData();
+        }, 2000);
       }
     </script>
   </div>
 </div>
 
-<!-- Cloudinary -->
 <script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
-<script>
-  const cloudName = 'dsaxcy1sm'; // your Cloudinary cloud name
-  const uploadPreset = 'zrx3ywf6'; // your unsigned upload preset
-
-  function uploadImage() {
-    cloudinary.openUploadWidget({
-      cloudName: cloudName,
-      uploadPreset: uploadPreset,
-      multiple: false,
-      sources: ['local', 'url', 'camera'],
-      cropping: false,
-      folder: "BusinessLinks"
-    }, (error, result) => {
-      if (!error && result && result.event === "success") {
-        let imgUrl = result.info.secure_url;
-        // find first empty slot
-        for(let i=1;i<=24;i++){
-          let imgEl = document.getElementById('img'+i);
-          if(imgEl.src === ""){
-            imgEl.src = imgUrl;
-            break;
-          }
-        }
-      }
-    });
-  }
-
-  function removeImage(i){
-    document.getElementById('img'+i).src = "";
-    document.getElementById('link'+i).value = "";
-  }
-
-  // Splash fade control
-  window.onload = () => {
-    setTimeout(() => {
-      document.getElementById('splash').style.display = 'none';
-      document.getElementById('gallery').style.display = 'block';
-    }, 2000); // splash fades out after 2s
-  }
-</script>
 
 </body>
 </html>
