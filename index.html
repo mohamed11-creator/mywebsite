@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BusinessLinks</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.4/axios.min.js"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BusinessLinks</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<!-- Splash Screen -->
-<div id="splash">
+  <!-- Splash (white background) -->
+  <div id="splash" role="banner" aria-hidden="false">
     <h1>BusinessLinks</h1>
-</div>
+  </div>
 
-<!-- Main Page -->
-<div id="main" class="hidden">
-    <div class="slots-container">
-        <!-- 24 slots -->
-        <!-- Each slot template -->
-        <!-- We will use JS to generate all 24 dynamically -->
-    </div>
-</div>
+  <!-- Main gallery -->
+  <main id="main" aria-hidden="true">
+    <header class="page-header">
+      <h2>BusinessLinks Gallery</h2>
+      <p class="lead">Upload images and add a link under each card. Images are stored in Cloudinary and persist via JSONBin.</p>
+    </header>
 
-<script src="script.js"></script>
+    <section id="gallery" class="gallery" aria-live="polite">
+      <!-- JS will populate 24 slots here -->
+    </section>
+
+    <footer class="footer muted">You (admin) can upload / edit. Links open in a new tab.</footer>
+  </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
