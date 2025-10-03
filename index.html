@@ -4,260 +4,241 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks</title>
-<style>
-  body {
-    margin: 0;
-    padding: 0;
-    font-family: Impact, Charcoal, sans-serif;
-    background-color: white;
-    color: black;
-    text-align: center;
-  }
-
-  /* Splash screen */
-  #splash {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 4vw;
-    z-index: 999;
-    opacity: 0;
-    transition: opacity 2s;
-  }
-
-  #main {
-    display: none;
-    padding: 20px;
-  }
-
-  .gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    justify-items: center;
-  }
-
-  .slot {
-    width: 180px;
-    height: 320px; /* 9:16 ratio */
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    padding: 5px;
-  }
-
-  .slot img {
-    width: 100%;
-    height: auto;
-    flex: 1;
-    object-fit: cover;
-    border-radius: 8px;
-  }
-
-  .slot input[type="text"] {
-    width: 90%;
-    margin-top: 5px;
-    padding: 5px;
-    font-size: 0.9rem;
-  }
-
-  .slot button {
-    margin-top: 5px;
-    padding: 5px;
-    width: 90%;
-    font-size: 0.9rem;
-    cursor: pointer;
-  }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <!-- Splash Screen -->
-<div id="splash">BusinessLinks</div>
-
-<!-- Main Page -->
-<div id="main">
-  <h1>BusinessLinks Gallery</h1>
-  <div class="gallery" id="gallery"></div>
+<div id="splash">
+  <h1>BusinessLinks</h1>
 </div>
 
-<script>
-// === CONFIGURATION ===
-const CLOUDINARY_CLOUD_NAME = 'dsaxcy1sm';
-const CLOUDINARY_UPLOAD_PRESET = 'business';
-const JSONBIN_BIN_ID = '68df382743b1c97be95889d1';
-const JSONBIN_API_KEY = '$2a$10$2DfN5MTeXyZnF0Hjt6dzN.0.ztTRWpmDFkxlQKC2C43xe0J1awN9S';
-const NUM_SLOTS = 24;
+<!-- Main Gallery -->
+<div id="gallery" class="hidden">
+  <div class="slots-container">
+    <!-- 24 slots -->
+    <!-- Slots will be generated dynamically by JavaScript -->
+  </div>
+</div>
 
-// === SPLASH SCREEN FADE IN AND OUT ===
-const splash = document.getElementById('splash');
-const main = document.getElementById('main');
-window.addEventListener('load', () => {
-  splash.style.opacity = 1;
-  setTimeout(() => {
-    splash.style.opacity = 0;
-    setTimeout(() => {
-      splash.style.display = 'none';
-      main.style.display = 'block';
-      loadGallery();
-    }, 2000);
-  }, 2000); // 2s fade-in + 2s wait
-});
-
-// === LOAD GALLERY FROM JSONBIN ===
-async function loadGallery() {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': JSONBIN_API_KEY }
-  });
-  let data;
-  try {
-    const json = await res.json();
-    data = json.record || {};
-  } catch {
-    data = {};
-  }
-
-  const gallery = document.getElementById('gallery');
-  gallery.innerHTML = '';
-  
-  for (let i = 0; i < NUM_SLOTS; i++) {
-    const slotData = data[i] || { image: '', link: '' };
-    const slotDiv = document.createElement('div');
-    slotDiv.className = 'slot';
-
-    const img = document.createElement('img');
-    img.src = slotData.image || '';
-    slotDiv.appendChild(img);
-
-    const linkInput = document.createElement('input');
-    linkInput.type = 'text';
-    linkInput.placeholder = 'Enter URL';
-    linkInput.value = slotData.link;
-    slotDiv.appendChild(linkInput);
-
-    const uploadBtn = document.createElement('button');
-    uploadBtn.textContent = 'Upload Image';
-    uploadBtn.onclick = () => uploadImage(i, img);
-    slotDiv.appendChild(uploadBtn);
-
-    const saveLinkBtn = document.createElement('button');
-    saveLinkBtn.textContent = 'Save Link';
-    saveLinkBtn.onclick = () => saveLink(i, linkInput.value);
-    slotDiv.appendChild(saveLinkBtn);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.textContent = 'Remove';
-    removeBtn.onclick = () => removeSlot(i);
-    slotDiv.appendChild(removeBtn);
-
-    gallery.appendChild(slotDiv);
-  }
-}
-
-// === UPLOAD IMAGE TO CLOUDINARY ===
-function uploadImage(slotIndex, imgElement) {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'image/*';
-  input.onchange = async () => {
-    const file = input.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-    
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
-      method: 'POST',
-      body: formData
-    });
-    const data = await res.json();
-    imgElement.src = data.secure_url;
-    saveImage(slotIndex, data.secure_url);
-  };
-  input.click();
-}
-
-// === SAVE IMAGE URL TO JSONBIN ===
-async function saveImage(slotIndex, url) {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': JSONBIN_API_KEY }
-  });
-  let data;
-  try {
-    const json = await res.json();
-    data = json.record || {};
-  } catch { data = {}; }
-
-  data[slotIndex] = data[slotIndex] || {};
-  data[slotIndex].image = url;
-
-  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': JSONBIN_API_KEY
-    },
-    body: JSON.stringify(data)
-  });
-}
-
-// === SAVE LINK TO JSONBIN ===
-async function saveLink(slotIndex, link) {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': JSONBIN_API_KEY }
-  });
-  let data;
-  try {
-    const json = await res.json();
-    data = json.record || {};
-  } catch { data = {}; }
-
-  data[slotIndex] = data[slotIndex] || {};
-  data[slotIndex].link = link;
-
-  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': JSONBIN_API_KEY
-    },
-    body: JSON.stringify(data)
-  });
-}
-
-// === REMOVE SLOT CONTENT ===
-async function removeSlot(slotIndex) {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
-    headers: { 'X-Master-Key': JSONBIN_API_KEY }
-  });
-  let data;
-  try {
-    const json = await res.json();
-    data = json.record || {};
-  } catch { data = {}; }
-
-  data[slotIndex] = { image: '', link: '' };
-
-  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': JSONBIN_API_KEY
-    },
-    body: JSON.stringify(data)
-  });
-
-  loadGallery();
-}
-</script>
+<script src="script.js"></script>
 </body>
 </html>
+style.css
+
+css
+Copy code
+/* General Styles */
+body {
+  margin: 0;
+  font-family: Impact, Charcoal, sans-serif;
+  background-color: white;
+  color: black;
+  text-align: center;
+}
+
+/* Splash */
+#splash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  z-index: 1000;
+  font-size: 3rem;
+  opacity: 0;
+  animation: fadeInOut 4s forwards;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Gallery */
+.hidden { display: none; }
+
+.slots-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  padding: 20px;
+}
+
+.slot {
+  width: calc(25% - 20px);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.slot img {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  border: 2px solid #000;
+  border-radius: 8px;
+  margin-bottom: 5px;
+}
+
+/* Buttons */
+.slot button {
+  margin: 2px;
+  padding: 5px 8px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+  background-color: #ff4b4b;
+  color: white;
+}
+
+.slot input[type="text"] {
+  width: 90%;
+  margin-bottom: 5px;
+  padding: 4px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+  .slot { width: calc(50% - 20px); }
+}
+
+@media (max-width: 500px) {
+  .slot { width: calc(100% - 20px); }
+}
+script.js
+
+javascript
+Copy code
+const CLOUD_NAME = 'dsaxcy1sm';
+const UPLOAD_PRESET = 'business';
+const JSONBIN_ID = '68df382743b1c97be95889d1';
+const JSONBIN_KEY = '$2a$10$qWk39lnjY9SiWVhoQfD46eRhr0RfoeCog/5LazFm7xRkWsdHTIxSW';
+
+const splash = document.getElementById('splash');
+const gallery = document.getElementById('gallery');
+const slotsContainer = document.querySelector('.slots-container');
+
+// Fade splash and show gallery after 4s
+setTimeout(() => {
+  splash.style.display = 'none';
+  gallery.classList.remove('hidden');
+}, 4000);
+
+// Generate 24 slots
+for (let i = 0; i < 24; i++) {
+  const slot = document.createElement('div');
+  slot.classList.add('slot');
+
+  const img = document.createElement('img');
+  img.src = '';
+  slot.appendChild(img);
+
+  const linkInput = document.createElement('input');
+  linkInput.type = 'text';
+  linkInput.placeholder = 'Enter link URL';
+  slot.appendChild(linkInput);
+
+  const addLinkBtn = document.createElement('button');
+  addLinkBtn.textContent = 'Add/Edit Link';
+  slot.appendChild(addLinkBtn);
+
+  const uploadBtn = document.createElement('button');
+  uploadBtn.textContent = 'Upload Image';
+  slot.appendChild(uploadBtn);
+
+  const removeBtn = document.createElement('button');
+  removeBtn.textContent = 'Remove';
+  slot.appendChild(removeBtn);
+
+  slotsContainer.appendChild(slot);
+
+  // Upload button handler
+  uploadBtn.onclick = async () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.click();
+
+    fileInput.onchange = async () => {
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', UPLOAD_PRESET);
+
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      img.src = data.secure_url;
+      saveToJSONBin(i, data.secure_url, linkInput.value);
+    };
+  };
+
+  // Add/Edit Link handler
+  addLinkBtn.onclick = () => {
+    saveToJSONBin(i, img.src, linkInput.value);
+  };
+
+  // Remove handler
+  removeBtn.onclick = () => {
+    img.src = '';
+    linkInput.value = '';
+    saveToJSONBin(i, '', '');
+  };
+}
+
+// Fetch saved data from JSONBin
+async function loadFromJSONBin() {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+    headers: {
+      'X-Master-Key': JSONBIN_KEY
+    }
+  });
+  const data = await res.json();
+  if (!data.record) return;
+
+  data.record.forEach((item, index) => {
+    const slot = slotsContainer.children[index];
+    if (!slot) return;
+    slot.querySelector('img').src = item.img || '';
+    slot.querySelector('input').value = item.link || '';
+  });
+}
+
+// Save data to JSONBin
+async function saveToJSONBin(index, imgURL, linkURL) {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+    headers: {
+      'X-Master-Key': JSONBIN_KEY
+    }
+  });
+  const data = await res.json();
+  const record = data.record || Array(24).fill({ img: '', link: '' });
+  record[index] = { img: imgURL, link: linkURL };
+
+  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_KEY,
+      'X-Bin-Versioning': 'false'
+    },
+    body: JSON.stringify(record)
+  });
+}
+
+loadFromJSONBin();
