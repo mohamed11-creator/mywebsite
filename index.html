@@ -5,163 +5,259 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks</title>
 <style>
-    body { margin: 0; font-family: Impact, Charcoal, sans-serif; background: white; color: black; }
-    #splash { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 3em; }
-    #gallery { display: none; padding: 20px; }
-    .slot { width: 200px; aspect-ratio: 9/16; margin: 10px; display: inline-block; vertical-align: top; border: 1px solid #ccc; position: relative; }
-    .slot img { width: 100%; height: 100%; object-fit: cover; }
-    .controls { margin-top: 5px; text-align: center; }
-    .controls input, .controls button { margin: 2px; }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: Impact, Charcoal, sans-serif;
+    background-color: white;
+    color: black;
+    text-align: center;
+  }
+
+  /* Splash screen */
+  #splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 4vw;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 2s;
+  }
+
+  #main {
+    display: none;
+    padding: 20px;
+  }
+
+  .gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    justify-items: center;
+  }
+
+  .slot {
+    width: 180px;
+    height: 320px; /* 9:16 ratio */
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 5px;
+  }
+
+  .slot img {
+    width: 100%;
+    height: auto;
+    flex: 1;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .slot input[type="text"] {
+    width: 90%;
+    margin-top: 5px;
+    padding: 5px;
+    font-size: 0.9rem;
+  }
+
+  .slot button {
+    margin-top: 5px;
+    padding: 5px;
+    width: 90%;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body>
 
-<!-- Splash -->
+<!-- Splash Screen -->
 <div id="splash">BusinessLinks</div>
 
-<!-- Gallery -->
-<div id="gallery">
-  <div id="slotsContainer"></div>
+<!-- Main Page -->
+<div id="main">
+  <h1>BusinessLinks Gallery</h1>
+  <div class="gallery" id="gallery"></div>
 </div>
 
 <script>
-// === CONFIG ===
-const CLOUDINARY_UPLOAD_PRESET = "your_preset";
-const CLOUDINARY_CLOUD_NAME = "your_cloud_name";
-const JSONBIN_URL = "https://api.jsonbin.io/v3/b/YOUR_BIN_ID";
-const JSONBIN_KEY = "YOUR_JSONBIN_SECRET_KEY";
-const ADMIN = true; // set to false to hide upload/edit buttons for others
-const TOTAL_SLOTS = 24;
+// === CONFIGURATION ===
+const CLOUDINARY_CLOUD_NAME = 'dsaxcy1sm';
+const CLOUDINARY_UPLOAD_PRESET = 'business';
+const JSONBIN_BIN_ID = '68df382743b1c97be95889d1';
+const JSONBIN_API_KEY = '$2a$10$2DfN5MTeXyZnF0Hjt6dzN.0.ztTRWpmDFkxlQKC2C43xe0J1awN9S';
+const NUM_SLOTS = 24;
 
-// === SPLASH FADE IN/OUT ===
-window.addEventListener("load", () => {
-    const splash = document.getElementById('splash');
+// === SPLASH SCREEN FADE IN AND OUT ===
+const splash = document.getElementById('splash');
+const main = document.getElementById('main');
+window.addEventListener('load', () => {
+  splash.style.opacity = 1;
+  setTimeout(() => {
+    splash.style.opacity = 0;
     setTimeout(() => {
-        splash.style.transition = 'opacity 1s';
-        splash.style.opacity = 0;
-        setTimeout(() => { splash.style.display = 'none'; showGallery(); }, 1000);
-    }, 4000); // show 4s
+      splash.style.display = 'none';
+      main.style.display = 'block';
+      loadGallery();
+    }, 2000);
+  }, 2000); // 2s fade-in + 2s wait
 });
 
-// === SHOW GALLERY ===
-function showGallery() {
-    document.getElementById('gallery').style.display = 'block';
-    loadSlots();
-}
+// === LOAD GALLERY FROM JSONBIN ===
+async function loadGallery() {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+  });
+  let data;
+  try {
+    const json = await res.json();
+    data = json.record || {};
+  } catch {
+    data = {};
+  }
 
-// === LOAD SLOTS FROM JSON ===
-async function loadSlots() {
-    const container = document.getElementById('slotsContainer');
-    container.innerHTML = '';
-    let data = {};
-    try {
-        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
-        const json = await res.json();
-        data = json.record || {};
-    } catch(e){ console.error("JSONBin fetch error:", e); }
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = '';
+  
+  for (let i = 0; i < NUM_SLOTS; i++) {
+    const slotData = data[i] || { image: '', link: '' };
+    const slotDiv = document.createElement('div');
+    slotDiv.className = 'slot';
 
-    for(let i=0; i<TOTAL_SLOTS; i++){
-        const slot = document.createElement('div');
-        slot.className = 'slot';
-        const img = document.createElement('img');
-        img.src = data[`img${i}`] || '';
-        slot.appendChild(img);
+    const img = document.createElement('img');
+    img.src = slotData.image || '';
+    slotDiv.appendChild(img);
 
-        // controls only for admin
-        if(ADMIN){
-            const controls = document.createElement('div');
-            controls.className = 'controls';
+    const linkInput = document.createElement('input');
+    linkInput.type = 'text';
+    linkInput.placeholder = 'Enter URL';
+    linkInput.value = slotData.link;
+    slotDiv.appendChild(linkInput);
 
-            // Upload button
-            const uploadBtn = document.createElement('input');
-            uploadBtn.type = 'file';
-            uploadBtn.addEventListener('change', e => uploadImage(e.target.files[0], i));
-            controls.appendChild(uploadBtn);
+    const uploadBtn = document.createElement('button');
+    uploadBtn.textContent = 'Upload Image';
+    uploadBtn.onclick = () => uploadImage(i, img);
+    slotDiv.appendChild(uploadBtn);
 
-            // Link input
-            const linkInput = document.createElement('input');
-            linkInput.type = 'text';
-            linkInput.placeholder = 'Enter link';
-            linkInput.value = data[`link${i}`] || '';
-            linkInput.addEventListener('change', e => saveLink(e.target.value, i));
-            controls.appendChild(linkInput);
+    const saveLinkBtn = document.createElement('button');
+    saveLinkBtn.textContent = 'Save Link';
+    saveLinkBtn.onclick = () => saveLink(i, linkInput.value);
+    slotDiv.appendChild(saveLinkBtn);
 
-            // Remove button
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = 'Remove';
-            removeBtn.addEventListener('click', () => removeSlot(i));
-            controls.appendChild(removeBtn);
+    const removeBtn = document.createElement('button');
+    removeBtn.textContent = 'Remove';
+    removeBtn.onclick = () => removeSlot(i);
+    slotDiv.appendChild(removeBtn);
 
-            slot.appendChild(controls);
-        }
-
-        container.appendChild(slot);
-    }
+    gallery.appendChild(slotDiv);
+  }
 }
 
 // === UPLOAD IMAGE TO CLOUDINARY ===
-async function uploadImage(file, slotIndex){
-    if(!file) return;
-    const form = new FormData();
-    form.append('file', file);
-    form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
+function uploadImage(slotIndex, imgElement) {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async () => {
+    const file = input.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    
     const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
-        method: 'POST',
-        body: form
+      method: 'POST',
+      body: formData
     });
     const data = await res.json();
-    saveImageUrl(data.secure_url, slotIndex);
+    imgElement.src = data.secure_url;
+    saveImage(slotIndex, data.secure_url);
+  };
+  input.click();
 }
 
 // === SAVE IMAGE URL TO JSONBIN ===
-async function saveImageUrl(url, slotIndex){
-    try{
-        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
-        const json = await res.json();
-        const record = json.record || {};
-        record[`img${slotIndex}`] = url;
-        await fetch(JSONBIN_URL, {
-            method: 'PUT',
-            headers: { "Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY },
-            body: JSON.stringify(record)
-        });
-        loadSlots();
-    } catch(e){ console.error("Error saving image URL:", e); }
+async function saveImage(slotIndex, url) {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+  });
+  let data;
+  try {
+    const json = await res.json();
+    data = json.record || {};
+  } catch { data = {}; }
+
+  data[slotIndex] = data[slotIndex] || {};
+  data[slotIndex].image = url;
+
+  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_API_KEY
+    },
+    body: JSON.stringify(data)
+  });
 }
 
-// === SAVE LINK ===
-async function saveLink(link, slotIndex){
-    try{
-        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
-        const json = await res.json();
-        const record = json.record || {};
-        record[`link${slotIndex}`] = link;
-        await fetch(JSONBIN_URL, {
-            method: 'PUT',
-            headers: { "Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY },
-            body: JSON.stringify(record)
-        });
-    } catch(e){ console.error("Error saving link:", e); }
+// === SAVE LINK TO JSONBIN ===
+async function saveLink(slotIndex, link) {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+  });
+  let data;
+  try {
+    const json = await res.json();
+    data = json.record || {};
+  } catch { data = {}; }
+
+  data[slotIndex] = data[slotIndex] || {};
+  data[slotIndex].link = link;
+
+  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_API_KEY
+    },
+    body: JSON.stringify(data)
+  });
 }
 
-// === REMOVE SLOT ===
-async function removeSlot(slotIndex){
-    try{
-        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
-        const json = await res.json();
-        const record = json.record || {};
-        record[`img${slotIndex}`] = '';
-        record[`link${slotIndex}`] = '';
-        await fetch(JSONBIN_URL, {
-            method: 'PUT',
-            headers: { "Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY },
-            body: JSON.stringify(record)
-        });
-        loadSlots();
-    } catch(e){ console.error("Error removing slot:", e); }
+// === REMOVE SLOT CONTENT ===
+async function removeSlot(slotIndex) {
+  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+    headers: { 'X-Master-Key': JSONBIN_API_KEY }
+  });
+  let data;
+  try {
+    const json = await res.json();
+    data = json.record || {};
+  } catch { data = {}; }
+
+  data[slotIndex] = { image: '', link: '' };
+
+  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': JSONBIN_API_KEY
+    },
+    body: JSON.stringify(data)
+  });
+
+  loadGallery();
 }
 </script>
-
 </body>
 </html>
