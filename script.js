@@ -1,128 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BusinessLinks</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-
-<!-- Splash Screen -->
-<div id="splash">
-  <h1>BusinessLinks</h1>
-</div>
-
-<!-- Main Gallery -->
-<div id="gallery" class="hidden">
-  <div class="slots-container">
-    <!-- 24 slots -->
-    <!-- Slots will be generated dynamically by JavaScript -->
-  </div>
-</div>
-
-<script src="script.js"></script>
-</body>
-</html>
-style.css
-
-css
-Copy code
-/* General Styles */
-body {
-  margin: 0;
-  font-family: Impact, Charcoal, sans-serif;
-  background-color: white;
-  color: black;
-  text-align: center;
-}
-
-/* Splash */
-#splash {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: white;
-  z-index: 1000;
-  font-size: 3rem;
-  opacity: 0;
-  animation: fadeInOut 4s forwards;
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-/* Gallery */
-.hidden { display: none; }
-
-.slots-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 20px;
-  padding: 20px;
-}
-
-.slot {
-  width: calc(25% - 20px);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.slot img {
-  width: 100%;
-  aspect-ratio: 9 / 16;
-  object-fit: cover;
-  border: 2px solid #000;
-  border-radius: 8px;
-  margin-bottom: 5px;
-}
-
-/* Buttons */
-.slot button {
-  margin: 2px;
-  padding: 5px 8px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  background-color: #ff4b4b;
-  color: white;
-}
-
-.slot input[type="text"] {
-  width: 90%;
-  margin-bottom: 5px;
-  padding: 4px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-}
-
-/* Responsive */
-@media (max-width: 800px) {
-  .slot { width: calc(50% - 20px); }
-}
-
-@media (max-width: 500px) {
-  .slot { width: calc(100% - 20px); }
-}
-script.js
-
-javascript
-Copy code
-const CLOUD_NAME = 'dsaxcy1sm';
-const UPLOAD_PRESET = 'business';
+const CLOUD_NAME = 'dsaxcy1sm';  // your Cloudinary cloud name
+const UPLOAD_PRESET = 'business'; // your unsigned upload preset
 const JSONBIN_ID = '68df382743b1c97be95889d1';
 const JSONBIN_KEY = '$2a$10$qWk39lnjY9SiWVhoQfD46eRhr0RfoeCog/5LazFm7xRkWsdHTIxSW';
 
@@ -130,7 +7,7 @@ const splash = document.getElementById('splash');
 const gallery = document.getElementById('gallery');
 const slotsContainer = document.querySelector('.slots-container');
 
-// Fade splash and show gallery after 4s
+// Fade splash and show gallery
 setTimeout(() => {
   splash.style.display = 'none';
   gallery.classList.remove('hidden');
@@ -164,7 +41,7 @@ for (let i = 0; i < 24; i++) {
 
   slotsContainer.appendChild(slot);
 
-  // Upload button handler
+  // Upload image
   uploadBtn.onclick = async () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -188,12 +65,12 @@ for (let i = 0; i < 24; i++) {
     };
   };
 
-  // Add/Edit Link handler
+  // Add/Edit link
   addLinkBtn.onclick = () => {
     saveToJSONBin(i, img.src, linkInput.value);
   };
 
-  // Remove handler
+  // Remove image and link
   removeBtn.onclick = () => {
     img.src = '';
     linkInput.value = '';
@@ -201,17 +78,15 @@ for (let i = 0; i < 24; i++) {
   };
 }
 
-// Fetch saved data from JSONBin
+// Load saved data from JSONBin
 async function loadFromJSONBin() {
   const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
-    headers: {
-      'X-Master-Key': JSONBIN_KEY
-    }
+    headers: { 'X-Master-Key': JSONBIN_KEY }
   });
   const data = await res.json();
-  if (!data.record) return;
+  const record = data.record || [];
 
-  data.record.forEach((item, index) => {
+  record.forEach((item, index) => {
     const slot = slotsContainer.children[index];
     if (!slot) return;
     slot.querySelector('img').src = item.img || '';
@@ -222,9 +97,7 @@ async function loadFromJSONBin() {
 // Save data to JSONBin
 async function saveToJSONBin(index, imgURL, linkURL) {
   const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
-    headers: {
-      'X-Master-Key': JSONBIN_KEY
-    }
+    headers: { 'X-Master-Key': JSONBIN_KEY }
   });
   const data = await res.json();
   const record = data.record || Array(24).fill({ img: '', link: '' });
