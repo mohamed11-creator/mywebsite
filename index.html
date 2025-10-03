@@ -5,124 +5,161 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks</title>
 <style>
-body { margin:0; padding:0; font-family:Impact, Charcoal, sans-serif; background:white; color:black; }
-#splash { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; font-size:10vw; font-weight:bold; background:white; z-index:1000; opacity:0; transition:opacity 1s; }
-#gallery { display:none; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap:20px; padding:20px; max-width:1200px; margin:auto; }
-.slot { background:#f0f0f0; border-radius:10px; overflow:hidden; display:flex; flex-direction:column; align-items:center; }
-.slot img { width:100%; aspect-ratio:9/16; object-fit:cover; border-bottom:1px solid #ccc; background:#ddd; }
-.slot input[type="file"], .slot input[type="text"], .slot button { margin:5px 0; width:90%; padding:5px; font-size:0.9em; }
-.slot input[type="text"] { border:1px solid #ccc; border-radius:5px; }
-.slot button { background-color:#007BFF; color:white; border:none; border-radius:5px; cursor:pointer; }
-.slot button:hover { background-color:#0056b3; }
+    body { margin: 0; font-family: Impact, Charcoal, sans-serif; background: white; color: black; }
+    #splash { display: flex; justify-content: center; align-items: center; height: 100vh; font-size: 3em; }
+    #gallery { display: none; padding: 20px; }
+    .slot { width: 200px; aspect-ratio: 9/16; margin: 10px; display: inline-block; vertical-align: top; border: 1px solid #ccc; position: relative; }
+    .slot img { width: 100%; height: 100%; object-fit: cover; }
+    .controls { margin-top: 5px; text-align: center; }
+    .controls input, .controls button { margin: 2px; }
 </style>
 </head>
 <body>
 
+<!-- Splash -->
 <div id="splash">BusinessLinks</div>
-<div id="gallery"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<!-- Gallery -->
+<div id="gallery">
+  <div id="slotsContainer"></div>
+</div>
+
 <script>
-const splash = document.getElementById('splash');
-const gallery = document.getElementById('gallery');
+// === CONFIG ===
+const CLOUDINARY_UPLOAD_PRESET = "your_preset";
+const CLOUDINARY_CLOUD_NAME = "your_cloud_name";
+const JSONBIN_URL = "https://api.jsonbin.io/v3/b/YOUR_BIN_ID";
+const JSONBIN_KEY = "YOUR_JSONBIN_SECRET_KEY";
+const ADMIN = true; // set to false to hide upload/edit buttons for others
+const TOTAL_SLOTS = 24;
 
-// Splash fade in/out
-window.addEventListener('load', () => {
-    splash.style.opacity = 1;
+// === SPLASH FADE IN/OUT ===
+window.addEventListener("load", () => {
+    const splash = document.getElementById('splash');
     setTimeout(() => {
+        splash.style.transition = 'opacity 1s';
         splash.style.opacity = 0;
-        setTimeout(() => {
-            splash.style.display = 'none';
-            gallery.style.display = 'grid';
-            createSlots();
-            loadCloudinaryImages();
-        }, 1000);
-    }, 4000);
+        setTimeout(() => { splash.style.display = 'none'; showGallery(); }, 1000);
+    }, 4000); // show 4s
 });
 
-// Cloudinary configuration
-const cloudName = 'dsaxcy1sm';
-const unsignedUploadPreset = 'zrx3ywf6';
-const folderName = 'businesslinks'; // optional: your folder name in Cloudinary
+// === SHOW GALLERY ===
+function showGallery() {
+    document.getElementById('gallery').style.display = 'block';
+    loadSlots();
+}
 
-function createSlots() {
-    gallery.innerHTML = '';
-    for(let i=0; i<24; i++){
+// === LOAD SLOTS FROM JSON ===
+async function loadSlots() {
+    const container = document.getElementById('slotsContainer');
+    container.innerHTML = '';
+    let data = {};
+    try {
+        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
+        const json = await res.json();
+        data = json.record || {};
+    } catch(e){ console.error("JSONBin fetch error:", e); }
+
+    for(let i=0; i<TOTAL_SLOTS; i++){
         const slot = document.createElement('div');
         slot.className = 'slot';
-
         const img = document.createElement('img');
-        img.alt = `Slot ${i+1}`;
+        img.src = data[`img${i}`] || '';
         slot.appendChild(img);
 
-        const linkInput = document.createElement('input');
-        linkInput.type = 'text';
-        linkInput.placeholder = 'Enter link for this image';
-        slot.appendChild(linkInput);
+        // controls only for admin
+        if(ADMIN){
+            const controls = document.createElement('div');
+            controls.className = 'controls';
 
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            const link = linkInput.value || '';
-            const uploaded = await uploadToCloudinary(file, link);
-            if(uploaded) img.src = uploaded.secure_url;
-        });
-        slot.appendChild(fileInput);
+            // Upload button
+            const uploadBtn = document.createElement('input');
+            uploadBtn.type = 'file';
+            uploadBtn.addEventListener('change', e => uploadImage(e.target.files[0], i));
+            controls.appendChild(uploadBtn);
 
-        const removeBtn = document.createElement('button');
-        removeBtn.textContent = 'Remove';
-        removeBtn.addEventListener('click', () => {
-            img.src = '';
-            linkInput.value = '';
-            fileInput.value = '';
-        });
-        slot.appendChild(removeBtn);
+            // Link input
+            const linkInput = document.createElement('input');
+            linkInput.type = 'text';
+            linkInput.placeholder = 'Enter link';
+            linkInput.value = data[`link${i}`] || '';
+            linkInput.addEventListener('change', e => saveLink(e.target.value, i));
+            controls.appendChild(linkInput);
 
-        gallery.appendChild(slot);
+            // Remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.textContent = 'Remove';
+            removeBtn.addEventListener('click', () => removeSlot(i));
+            controls.appendChild(removeBtn);
+
+            slot.appendChild(controls);
+        }
+
+        container.appendChild(slot);
     }
 }
 
-// Upload image to Cloudinary
-async function uploadToCloudinary(file, link) {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', unsignedUploadPreset);
-    formData.append('context', `link=${link}`);
-    if(folderName) formData.append('folder', folderName);
-    try {
-        const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, formData);
-        return res.data;
-    } catch(err) {
-        alert('Upload failed');
-        console.error(err);
-        return null;
-    }
+// === UPLOAD IMAGE TO CLOUDINARY ===
+async function uploadImage(file, slotIndex){
+    if(!file) return;
+    const form = new FormData();
+    form.append('file', file);
+    form.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
+        method: 'POST',
+        body: form
+    });
+    const data = await res.json();
+    saveImageUrl(data.secure_url, slotIndex);
 }
 
-// Load existing images from Cloudinary
-async function loadCloudinaryImages() {
-    try {
-        // Replace with your Cloudinary JSON endpoint if using unsigned list
-        const res = await axios.get(`https://res.cloudinary.com/${cloudName}/image/list/${folderName}.json`);
-        const images = res.data.resources;
-        const slots = document.querySelectorAll('.slot');
-
-        images.forEach((imgData, index) => {
-            if(index >= 24) return;
-            const slot = slots[index];
-            const img = slot.querySelector('img');
-            const linkInput = slot.querySelector('input[type="text"]');
-            img.src = imgData.url;
-            if(imgData.context && imgData.context.custom && imgData.context.custom.link){
-                linkInput.value = imgData.context.custom.link;
-            }
+// === SAVE IMAGE URL TO JSONBIN ===
+async function saveImageUrl(url, slotIndex){
+    try{
+        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
+        const json = await res.json();
+        const record = json.record || {};
+        record[`img${slotIndex}`] = url;
+        await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: { "Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY },
+            body: JSON.stringify(record)
         });
-    } catch(err) {
-        console.warn('Could not load existing Cloudinary images', err);
-    }
+        loadSlots();
+    } catch(e){ console.error("Error saving image URL:", e); }
+}
+
+// === SAVE LINK ===
+async function saveLink(link, slotIndex){
+    try{
+        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
+        const json = await res.json();
+        const record = json.record || {};
+        record[`link${slotIndex}`] = link;
+        await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: { "Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY },
+            body: JSON.stringify(record)
+        });
+    } catch(e){ console.error("Error saving link:", e); }
+}
+
+// === REMOVE SLOT ===
+async function removeSlot(slotIndex){
+    try{
+        const res = await fetch(JSONBIN_URL, { headers: { "X-Master-Key": JSONBIN_KEY } });
+        const json = await res.json();
+        const record = json.record || {};
+        record[`img${slotIndex}`] = '';
+        record[`link${slotIndex}`] = '';
+        await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: { "Content-Type":"application/json", "X-Master-Key": JSONBIN_KEY },
+            body: JSON.stringify(record)
+        });
+        loadSlots();
+    } catch(e){ console.error("Error removing slot:", e); }
 }
 </script>
 
