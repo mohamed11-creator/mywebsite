@@ -1,30 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BusinessLinks</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusinessLinks</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.4/axios.min.js"></script>
 </head>
 <body>
 
-<!-- Splash -->
+<!-- Splash Screen -->
 <div id="splash">
     <h1>BusinessLinks</h1>
 </div>
 
-<!-- Main Content -->
-<div id="main-content" class="hidden">
-    <div id="gallery">
+<!-- Main Page -->
+<div id="main" class="hidden">
+    <div class="slots-container">
         <!-- 24 slots -->
-        <!-- Each slot contains: image, link input, upload button, remove button -->
-        ${Array.from({length: 24}).map((_, i) => `
-        <div class="slot" data-index="${i}">
-            <img src="" alt="Image ${i+1}">
-            <input type="text" placeholder="Add link" class="link-input">
-            <button class="upload-btn">Upload Image</button>
-            <button class="remove-btn">Remove</button>
-        </div>`).join('')}
+        <!-- Each slot template -->
+        <!-- We will use JS to generate all 24 dynamically -->
     </div>
 </div>
 
