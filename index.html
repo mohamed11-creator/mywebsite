@@ -1,58 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BusinessLinks</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Impact, Charcoal, sans-serif;
+    background-color: white;
+    color: black;
+  }
+  /* Splash */
+  #splash {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-size: 3rem;
+    font-weight: bold;
+    animation: fadeOut 3s forwards;
+  }
+  @keyframes fadeOut {
+    0% {opacity: 0;}
+    10% {opacity: 1;}
+    90% {opacity: 1;}
+    100% {opacity: 0; display: none;}
+  }
+
+  /* Gallery */
+  #gallery {
+    display: none;
+    padding: 20px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+    justify-items: center;
+  }
+  .slot {
+    width: 160px;
+    height: 284px; /* 9:16 ratio */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f9f9f9;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    padding: 5px;
+  }
+  .slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .slot input {
+    width: 90%;
+    margin: 5px 0;
+  }
+  .slot button {
+    margin: 2px;
+    padding: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="splash">BusinessLinks</div>
+
 <div id="gallery">
   <div class="gallery-grid" id="galleryGrid"></div>
 </div>
 
-<style>
-#gallery {
-  display: none;
-  width: 100%;
-  padding: 20px;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center; /* center the grid */
-}
-
-.gallery-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); /* responsive columns */
-  gap: 15px;
-  justify-items: center;
-}
-.slot {
-  width: 160px;
-  height: 284px; /* 9:16 */
-  border: 2px solid #ccc;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  overflow: hidden;
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-  padding: 5px;
-}
-.slot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 8px;
-}
-</style>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.1/axios.min.js"></script>
 <script>
+const splash = document.getElementById("splash");
+const gallery = document.getElementById("gallery");
 const galleryGrid = document.getElementById("galleryGrid");
 
+// Cloudinary config
+const cloudName = 'dsaxcy1sm'; // replace with yours
+const uploadPreset = 'zrx3ywf6'; // replace with yours
+
+// Show gallery after splash
+setTimeout(() => {
+  splash.style.display = 'none';
+  gallery.style.display = 'block';
+}, 3000);
+
+// Create 24 slots
 for (let i = 1; i <= 24; i++) {
   const slot = document.createElement("div");
   slot.className = "slot";
   slot.innerHTML = `
     <img id="img${i}" src="" alt="">
     <input type="text" id="link${i}" placeholder="Add link here">
-    <button onclick="uploadSingle(${i})">Upload Image</button>
-    <button onclick="addLink(${i})">Add Link</button>
+    <button onclick="uploadImage(${i})">Upload Image</button>
     <button onclick="removeImage(${i})">Remove</button>
   `;
   galleryGrid.appendChild(slot);
 }
+
+// Upload image to Cloudinary
+function uploadImage(slotNum) {
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/*";
+  fileInput.onchange = async () => {
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", uploadPreset);
+
+    try {
+      const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, formData);
+      const imgUrl = res.data.secure_url;
+      document.getElementById(`img${slotNum}`).src = imgUrl;
+      localStorage.setItem(`img${slotNum}`, imgUrl); // persist
+    } catch (err) {
+      alert("Upload failed: " + err.message);
+    }
+  };
+  fileInput.click();
+}
+
+// Remove image
+function removeImage(slotNum) {
+  document.getElementById(`img${slotNum}`).src = "";
+  localStorage.removeItem(`img${slotNum}`);
+}
+
+// Load stored images
+window.onload = () => {
+  for (let i = 1; i <= 24; i++) {
+    const stored = localStorage.getItem(`img${i}`);
+    if (stored) document.getElementById(`img${i}`).src = stored;
+  }
+}
 </script>
+
+</body>
+</html>
