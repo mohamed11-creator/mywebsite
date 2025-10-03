@@ -4,146 +4,127 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BusinessLinks</title>
+<link rel="stylesheet" href="style.css">
 <style>
 body {
-    background: white;
-    color: black;
-    font-family: Impact, Charcoal, sans-serif;
     margin: 0;
-    padding: 20px;
-    text-align: center;
+    font-family: Impact, Charcoal, sans-serif;
+    background-color: white;
+    color: black;
 }
 
 #splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     font-size: 3em;
-    animation: fadeInOut 2s forwards;
-    margin-bottom: 20px;
-}
-
-@keyframes fadeInOut {
-    0% {opacity:0;}
-    50% {opacity:1;}
-    100% {opacity:0;}
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 1s ease;
 }
 
 #gallery {
+    display: none;
+    padding: 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 20px;
+    justify-items: center;
 }
 
 .slot {
+    width: 160px;
+    aspect-ratio: 9/16;
+    border: 2px solid #000;
     display: flex;
     flex-direction: column;
     align-items: center;
-    border: 2px solid #ccc;
-    border-radius: 12px;
+    justify-content: space-between;
     padding: 5px;
-    background: #f9f9f9;
 }
 
 .slot img {
     width: 100%;
-    aspect-ratio: 9/16;
+    height: 100%;
     object-fit: cover;
-    border-radius: 8px;
-    margin-bottom: 5px;
 }
 
-.slot input[type="text"] {
-    width: 90%;
-    margin: 5px 0;
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px solid #aaa;
-}
-
-.slot button {
-    width: 90%;
-    margin: 3px 0;
-    padding: 5px;
-    cursor: pointer;
-    border-radius: 5px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    font-weight: bold;
-}
-
-.slot button:hover {
-    background-color: #0056b3;
+.slot button, .slot input[type="text"] {
+    width: 100%;
+    margin-top: 5px;
+    box-sizing: border-box;
 }
 </style>
-<script src="https://widget.cloudinary.com/v2.0/global/all.js" type="text/javascript"></script>
 </head>
 <body>
-<h1 id="splash">BusinessLinks</h1>
-<div id="gallery"></div>
+
+<!-- Splash -->
+<div id="splash">BusinessLinks</div>
+
+<!-- Gallery -->
+<div id="gallery">
+    <!-- 24 Slots -->
+    <script>
+        const cloudName = 'dsaxcy1sm'; // your Cloudinary cloud name
+        const uploadPreset = 'zrx3ywf6'; // your Cloudinary upload preset
+
+        for(let i=1; i<=24; i++){
+            document.write(`
+                <div class="slot" id="slot${i}">
+                    <img src="" alt="Image ${i}" id="img${i}">
+                    <input type="text" placeholder="Enter link" id="link${i}">
+                    <button onclick="uploadImage(${i})">Upload Image</button>
+                    <button onclick="removeImage(${i})">Remove Image</button>
+                </div>
+            `);
+        }
+
+        function uploadImage(slotId){
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async () => {
+                const file = input.files[0];
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', uploadPreset);
+                const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                document.getElementById(`img${slotId}`).src = data.secure_url;
+            };
+            input.click();
+        }
+
+        function removeImage(slotId){
+            document.getElementById(`img${slotId}`).src = '';
+            document.getElementById(`link${slotId}`).value = '';
+        }
+    </script>
+</div>
 
 <script>
-const cloudName = 'dsaxcy1sm';  // Replace with your Cloudinary cloud name
-const uploadPreset = 'YOUR_UPLOAD_PRESET'; // Replace with your preset
-const gallery = document.getElementById('gallery');
-const slotsCount = 24;
-
-// Load existing images/links from localStorage (persistent across reloads)
-let slotData = JSON.parse(localStorage.getItem('slotData')) || Array(slotsCount).fill({ img: '', link: '' });
-
-function createSlot(index) {
-    const slot = document.createElement('div');
-    slot.classList.add('slot');
-
-    const img = document.createElement('img');
-    img.src = slotData[index].img || 'https://via.placeholder.com/160x284?text=Empty';
-    slot.appendChild(img);
-
-    const linkInput = document.createElement('input');
-    linkInput.type = 'text';
-    linkInput.placeholder = 'Add link';
-    linkInput.value = slotData[index].link || '';
-    linkInput.addEventListener('change', () => {
-        slotData[index].link = linkInput.value;
-        localStorage.setItem('slotData', JSON.stringify(slotData));
-    });
-    slot.appendChild(linkInput);
-
-    const uploadBtn = document.createElement('button');
-    uploadBtn.textContent = 'Upload Image';
-    uploadBtn.addEventListener('click', () => {
-        cloudinary.openUploadWidget(
-            { cloudName, uploadPreset },
-            (error, result) => {
-                if (!error && result && result.event === "success") {
-                    img.src = result.info.secure_url;
-                    slotData[index].img = result.info.secure_url;
-                    localStorage.setItem('slotData', JSON.stringify(slotData));
-                }
-            }
-        );
-    });
-    slot.appendChild(uploadBtn);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.textContent = 'Remove Image';
-    removeBtn.addEventListener('click', () => {
-        img.src = 'https://via.placeholder.com/160x284?text=Empty';
-        slotData[index].img = '';
-        slotData[index].link = '';
-        linkInput.value = '';
-        localStorage.setItem('slotData', JSON.stringify(slotData));
-    });
-    slot.appendChild(removeBtn);
-
-    return slot;
-}
-
-// Generate all slots
-for (let i = 0; i < slotsCount; i++) {
-    gallery.appendChild(createSlot(i));
-}
-
-// Remove splash after fade
-setTimeout(() => document.getElementById('splash').style.display = 'none', 2000);
+// Splash fade in/out once
+window.addEventListener('load', () => {
+    const splash = document.getElementById('splash');
+    splash.style.opacity = 1;
+    setTimeout(() => {
+        splash.style.opacity = 0;
+        setTimeout(() => {
+            splash.style.display = 'none';
+            document.getElementById('gallery').style.display = 'grid';
+        }, 1000);
+    }, 2000);
+});
 </script>
+
 </body>
 </html>
