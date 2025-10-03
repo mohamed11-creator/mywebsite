@@ -1,117 +1,89 @@
-const CLOUD_NAME = 'dsaxcy1sm';  // your Cloudinary cloud name
-const UPLOAD_PRESET = 'business'; // your unsigned upload preset
-const JSONBIN_ID = '68df382743b1c97be95889d1';
-const JSONBIN_KEY = '$2a$10$qWk39lnjY9SiWVhoQfD46eRhr0RfoeCog/5LazFm7xRkWsdHTIxSW';
-
 const splash = document.getElementById('splash');
-const gallery = document.getElementById('gallery');
-const slotsContainer = document.querySelector('.slots-container');
+const mainContent = document.getElementById('main-content');
+const slots = document.querySelectorAll('.slot');
 
-// Fade splash and show gallery
-setTimeout(() => {
-  splash.style.display = 'none';
-  gallery.classList.remove('hidden');
-}, 4000);
+const CLOUDINARY_CLOUD_NAME = 'dsaxcy1sm';
+const CLOUDINARY_UPLOAD_PRESET = 'business';
+const JSONBIN_BIN_ID = '68df382743b1c97be95889d1';
+const JSONBIN_API_KEY = '$2a$10$qWk39lnjY9SiWVhoQfD46eRhr0RfoeCog/5LazFm7xRkWsdHTIxSW';
 
-// Generate 24 slots
-for (let i = 0; i < 24; i++) {
-  const slot = document.createElement('div');
-  slot.classList.add('slot');
+window.addEventListener('load', () => {
+    setTimeout(() => {
+        splash.style.opacity = '0';
+        setTimeout(() => {
+            splash.classList.add('hidden');
+            mainContent.classList.remove('hidden');
+            loadData();
+        }, 2000);
+    }, 2000);
+});
 
-  const img = document.createElement('img');
-  img.src = '';
-  slot.appendChild(img);
+// Handle Cloudinary upload, remove, link input
+slots.forEach((slot, index) => {
+    const uploadBtn = slot.querySelector('.upload-btn');
+    const removeBtn = slot.querySelector('.remove-btn');
+    const linkInput = slot.querySelector('.link-input');
+    const imgTag = slot.querySelector('img');
 
-  const linkInput = document.createElement('input');
-  linkInput.type = 'text';
-  linkInput.placeholder = 'Enter link URL';
-  slot.appendChild(linkInput);
+    uploadBtn.addEventListener('click', async () => {
+        const file = document.createElement('input');
+        file.type = 'file';
+        file.accept = 'image/*';
+        file.click();
+        file.onchange = async () => {
+            const formData = new FormData();
+            formData.append('file', file.files[0]);
+            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-  const addLinkBtn = document.createElement('button');
-  addLinkBtn.textContent = 'Add/Edit Link';
-  slot.appendChild(addLinkBtn);
+            const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            imgTag.src = data.secure_url;
+            saveData(index, data.secure_url, linkInput.value);
+        };
+    });
 
-  const uploadBtn = document.createElement('button');
-  uploadBtn.textContent = 'Upload Image';
-  slot.appendChild(uploadBtn);
+    removeBtn.addEventListener('click', () => {
+        imgTag.src = '';
+        linkInput.value = '';
+        saveData(index, '', '');
+    });
 
-  const removeBtn = document.createElement('button');
-  removeBtn.textContent = 'Remove';
-  slot.appendChild(removeBtn);
+    linkInput.addEventListener('change', () => {
+        saveData(index, imgTag.src, linkInput.value);
+    });
+});
 
-  slotsContainer.appendChild(slot);
-
-  // Upload image
-  uploadBtn.onclick = async () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = 'image/*';
-    fileInput.click();
-
-    fileInput.onchange = async () => {
-      const file = fileInput.files[0];
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('upload_preset', UPLOAD_PRESET);
-
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await res.json();
-      img.src = data.secure_url;
-      saveToJSONBin(i, data.secure_url, linkInput.value);
-    };
-  };
-
-  // Add/Edit link
-  addLinkBtn.onclick = () => {
-    saveToJSONBin(i, img.src, linkInput.value);
-  };
-
-  // Remove image and link
-  removeBtn.onclick = () => {
-    img.src = '';
-    linkInput.value = '';
-    saveToJSONBin(i, '', '');
-  };
+// JSONBin persistence
+async function saveData(index, img, link) {
+    const existing = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+        headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    const json = await existing.json();
+    let data = json.record || [];
+    data[index] = { img, link };
+    await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Master-Key': JSONBIN_API_KEY
+        },
+        body: JSON.stringify(data)
+    });
 }
 
-// Load saved data from JSONBin
-async function loadFromJSONBin() {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
-    headers: { 'X-Master-Key': JSONBIN_KEY }
-  });
-  const data = await res.json();
-  const record = data.record || [];
-
-  record.forEach((item, index) => {
-    const slot = slotsContainer.children[index];
-    if (!slot) return;
-    slot.querySelector('img').src = item.img || '';
-    slot.querySelector('input').value = item.link || '';
-  });
+// Load saved images & links
+async function loadData() {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`, {
+        headers: { 'X-Master-Key': JSONBIN_API_KEY }
+    });
+    const data = (await res.json()).record || [];
+    data.forEach((item, index) => {
+        if (item) {
+            slots[index].querySelector('img').src = item.img || '';
+            slots[index].querySelector('.link-input').value = item.link || '';
+        }
+    });
 }
-
-// Save data to JSONBin
-async function saveToJSONBin(index, imgURL, linkURL) {
-  const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
-    headers: { 'X-Master-Key': JSONBIN_KEY }
-  });
-  const data = await res.json();
-  const record = data.record || Array(24).fill({ img: '', link: '' });
-  record[index] = { img: imgURL, link: linkURL };
-
-  await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': JSONBIN_KEY,
-      'X-Bin-Versioning': 'false'
-    },
-    body: JSON.stringify(record)
-  });
-}
-
-loadFromJSONBin();
