@@ -94,10 +94,10 @@
   const splash = document.getElementById('splash');
   const gallery = document.getElementById('gallery');
 
-  // Splash fade in/out once
+  // Splash fade in/out once for 4 seconds
   window.addEventListener('load', () => {
     setTimeout(() => {
-      splash.style.opacity = 0;
+      splash.style.opacity = 1;
       setTimeout(() => {
         splash.style.display = 'none';
         gallery.style.pointerEvents = 'auto';
